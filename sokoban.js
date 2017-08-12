@@ -101,7 +101,13 @@ Sokoban.prototype.doStep = function(direction) {
 
     var action = [];
     action[Sokoban.ITEM_MAN] = [];
+    action[Sokoban.ITEM_MAN_TARGET] = [];
+
     action[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = { 'changeOld': Sokoban.ITEM_EMPTY, 'changeNew': Sokoban.ITEM_MAN };
+    action[Sokoban.ITEM_MAN][Sokoban.ITEM_TARGET] = { 'changeOld': Sokoban.ITEM_EMPTY, 'changeNew': Sokoban.ITEM_MAN_TARGET };
+
+    action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = { 'changeOld': Sokoban.ITEM_TARGET, 'changeNew': Sokoban.ITEM_MAN };
+    action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = { 'changeOld': Sokoban.ITEM_TARGET, 'changeNew': Sokoban.ITEM_MAN_TARGET };
 
     var oldState = this.field[this.man.top][this.man.left];
     var newState = this.field[newman.top][newman.left];
