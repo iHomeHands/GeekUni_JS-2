@@ -106,6 +106,7 @@ Sokoban.prototype.doStep = function(direction) {
     action[Sokoban.ITEM_MAN] = [];
     action[Sokoban.ITEM_MAN_TARGET] = [];
     action[Sokoban.ITEM_BOX] = [];
+    action[Sokoban.ITEM_SOLVED] = [];
 
     action[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
         'before' : '',
@@ -125,6 +126,13 @@ Sokoban.prototype.doStep = function(direction) {
         //'changeNew': Sokoban.ITEM_MAN
     };
 
+    action[Sokoban.ITEM_MAN][Sokoban.ITEM_SOLVED] = {
+        'before' : '1',
+        //'changeOld': Sokoban.ITEM_BOX,
+        //'changeNew': Sokoban.ITEM_MAN
+    };
+
+
     action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
         'before' : '',
         'changeOld': Sokoban.ITEM_TARGET,
@@ -136,6 +144,7 @@ Sokoban.prototype.doStep = function(direction) {
         //'changeOld': Sokoban.ITEM_TARGET,
         //'changeNew': Sokoban.ITEM_MAN
     };
+
 
 
     action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
@@ -155,6 +164,13 @@ Sokoban.prototype.doStep = function(direction) {
         'changeOld': Sokoban.ITEM_EMPTY,
         'changeNew': Sokoban.ITEM_SOLVED
     };
+
+    action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_TARGET] = {
+        'before' : '',
+        'changeOld': Sokoban.ITEM_TARGET,
+        'changeNew': Sokoban.ITEM_SOLVED
+    };
+
 
 
     var oldManState = this.field[this.man.top][this.man.left];
