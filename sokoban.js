@@ -45,9 +45,9 @@ Sokoban.assignData(Sokoban.ITEM_WALL, '#', 'sokoban__item-wall');
 Sokoban.assignData(Sokoban.ITEM_MAN, '@', 'sokoban__item-man');
 Sokoban.assignData(Sokoban.ITEM_TARGET, '.', 'sokoban__item-target');
 Sokoban.assignData(Sokoban.ITEM_BOX, '$', 'sokoban__item-box');
-Sokoban.assignData(Sokoban.ITEM_SOLVED, '+', 'sokoban__item-solved');
+Sokoban.assignData(Sokoban.ITEM_SOLVED, '*', 'sokoban__item-solved');
 Sokoban.assignData(Sokoban.ITEM_EMPTY, ' ', 'sokoban__item-empty');
-Sokoban.assignData(Sokoban.ITEM_MAN_TARGET, '*', 'sokoban__item-man-target');
+Sokoban.assignData(Sokoban.ITEM_MAN_TARGET, '+', 'sokoban__item-man-target');
 
 Sokoban.prototype.loadField = function() {
     this.element.style.width = (this.options.level.Width * this.options.cellSize) + 'px';
@@ -60,7 +60,8 @@ Sokoban.prototype.loadField = function() {
             } else {
                 this.field[i][j] = Sokoban.getType(' ');
             }
-            if (this.field[i][j] == Sokoban.ITEM_MAN) {
+            if ((this.field[i][j] == Sokoban.ITEM_MAN)||
+            	(this.field[i][j] == Sokoban.ITEM_MAN_TARGET)) {
                 this.man.top = i;
                 this.man.left = j;
             }
@@ -109,66 +110,76 @@ Sokoban.prototype.doStep = function(direction) {
     action[Sokoban.ITEM_SOLVED] = [];
 
     action[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
-        'before' : '',
+        'before': '',
         'changeOld': Sokoban.ITEM_EMPTY,
         'changeNew': Sokoban.ITEM_MAN
     };
 
     action[Sokoban.ITEM_MAN][Sokoban.ITEM_TARGET] = {
-        'before' : '',
+        'before': '',
         'changeOld': Sokoban.ITEM_EMPTY,
         'changeNew': Sokoban.ITEM_MAN_TARGET
     };
 
     action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX] = {
-        'before' : '1',
+        'before': '1',
         //'changeOld': Sokoban.ITEM_BOX,
         //'changeNew': Sokoban.ITEM_MAN
     };
 
     action[Sokoban.ITEM_MAN][Sokoban.ITEM_SOLVED] = {
-        'before' : '1',
+        'before': '1',
         //'changeOld': Sokoban.ITEM_BOX,
         //'changeNew': Sokoban.ITEM_MAN
     };
 
 
     action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
-        'before' : '',
+        'before': '',
         'changeOld': Sokoban.ITEM_TARGET,
         'changeNew': Sokoban.ITEM_MAN
     };
 
     action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_BOX] = {
-        'before' : '1',
+        'before': '1',
         //'changeOld': Sokoban.ITEM_TARGET,
         //'changeNew': Sokoban.ITEM_MAN
     };
 
-
+    action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_SOLVED] = {
+        'before': '1',
+        //'changeOld': Sokoban.ITEM_TARGET,
+        //'changeNew': Sokoban.ITEM_MAN
+    };
 
     action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
-        'before' :'',
+        'before': '',
         'changeOld': Sokoban.ITEM_TARGET,
         'changeNew': Sokoban.ITEM_MAN_TARGET
     };
 
     action[Sokoban.ITEM_BOX][Sokoban.ITEM_EMPTY] = {
-        'before' : '',
+        'before': '',
         'changeOld': Sokoban.ITEM_EMPTY,
         'changeNew': Sokoban.ITEM_BOX
     };
 
     action[Sokoban.ITEM_BOX][Sokoban.ITEM_TARGET] = {
-        'before' : '',
+        'before': '',
         'changeOld': Sokoban.ITEM_EMPTY,
         'changeNew': Sokoban.ITEM_SOLVED
     };
 
     action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_TARGET] = {
-        'before' : '',
+        'before': '',
         'changeOld': Sokoban.ITEM_TARGET,
         'changeNew': Sokoban.ITEM_SOLVED
+    };
+
+    action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_EMPTY] = {
+        'before': '',
+        'changeOld': Sokoban.ITEM_TARGET,
+        'changeNew': Sokoban.ITEM_BOX
     };
 
 
@@ -227,22 +238,21 @@ new Sokoban({
     element: document.getElementById('sokoban'),
     cellSize: 30,
     level: {
-        Id: "#1",
-        Width: 19,
+        Id: 2,
+        Width: 7,
         Height: 11,
         L: [
-            "    #####",
-            "    #   #",
-            "    #   #",
-            "  ###   ##",
-            "  #      #",
-            "### # ## #   ######",
-            "#   # ## #####    #",
-            "# $  $           .#",
-            "#####$### #@##  ..#",
-            "    #     #########",
-            "    #######"
+            "#######",
+            "#     #",
+            "#$$ $ #",
+            "# $ #.#",
+            "# #.#.#",
+            "#.#+#.#",
+            "#.#.# #",
+            "# # $ #",
+            "# $$$ #",
+            "#     #",
+            "#######"
         ]
-
     }
 });
