@@ -121,8 +121,8 @@ Sokoban.prototype.doStep = function(direction) {
 
     action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX] = {
         'before' : '1',
-        'changeOld': Sokoban.ITEM_BOX,
-        'changeNew': Sokoban.ITEM_MAN
+        //'changeOld': Sokoban.ITEM_BOX,
+        //'changeNew': Sokoban.ITEM_MAN
     };
 
     action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
@@ -130,6 +130,13 @@ Sokoban.prototype.doStep = function(direction) {
         'changeOld': Sokoban.ITEM_TARGET,
         'changeNew': Sokoban.ITEM_MAN
     };
+
+    action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_BOX] = {
+        'before' : '1',
+        //'changeOld': Sokoban.ITEM_TARGET,
+        //'changeNew': Sokoban.ITEM_MAN
+    };
+
 
     action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
         'before' :'',
@@ -142,6 +149,13 @@ Sokoban.prototype.doStep = function(direction) {
         'changeOld': Sokoban.ITEM_EMPTY,
         'changeNew': Sokoban.ITEM_BOX
     };
+
+    action[Sokoban.ITEM_BOX][Sokoban.ITEM_TARGET] = {
+        'before' : '',
+        'changeOld': Sokoban.ITEM_EMPTY,
+        'changeNew': Sokoban.ITEM_SOLVED
+    };
+
 
     var oldManState = this.field[this.man.top][this.man.left];
     var newManState = this.field[newman.top][newman.left];
@@ -159,6 +173,7 @@ Sokoban.prototype.doStep = function(direction) {
                         this.updateClass(newman.top, newman.left);
                         this.updateClass(newbox.top, newbox.left);
                         console.log(this.man, newman, newbox);
+                        this.doStep(direction);
                         //this.man.left = newman.left;
                         //this.man.top = newman.top;
                     }
