@@ -98,30 +98,80 @@ Sokoban.prototype.doStep = function(direction) {
     var newman = JSON.parse(JSON.stringify(this.man));
     newman.left += ofs[direction].dy;
     newman.top += ofs[direction].dx;
+    var newbox = JSON.parse(JSON.stringify(this.man));
+    newbox.left += ofs[direction].dy * 2;
+    newbox.top += ofs[direction].dx * 2;
 
     var action = [];
     action[Sokoban.ITEM_MAN] = [];
     action[Sokoban.ITEM_MAN_TARGET] = [];
+    action[Sokoban.ITEM_BOX] = [];
 
-    action[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = { 'changeOld': Sokoban.ITEM_EMPTY, 'changeNew': Sokoban.ITEM_MAN };
-    action[Sokoban.ITEM_MAN][Sokoban.ITEM_TARGET] = { 'changeOld': Sokoban.ITEM_EMPTY, 'changeNew': Sokoban.ITEM_MAN_TARGET };
+    action[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
+        'before' : '',
+        'changeOld': Sokoban.ITEM_EMPTY,
+        'changeNew': Sokoban.ITEM_MAN
+    };
 
-    action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = { 'changeOld': Sokoban.ITEM_TARGET, 'changeNew': Sokoban.ITEM_MAN };
-    action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = { 'changeOld': Sokoban.ITEM_TARGET, 'changeNew': Sokoban.ITEM_MAN_TARGET };
+    action[Sokoban.ITEM_MAN][Sokoban.ITEM_TARGET] = {
+        'before' : '',
+        'changeOld': Sokoban.ITEM_EMPTY,
+        'changeNew': Sokoban.ITEM_MAN_TARGET
+    };
 
-    var oldState = this.field[this.man.top][this.man.left];
-    var newState = this.field[newman.top][newman.left];
-    console.dir(action[oldState]);
-    if (action[oldState] != undefined) {
-        var doAction = action[oldState][newState];
+    action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX] = {
+        'before' : '1',
+        'changeOld': Sokoban.ITEM_BOX,
+        'changeNew': Sokoban.ITEM_MAN
+    };
+
+    action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
+        'before' : '',
+        'changeOld': Sokoban.ITEM_TARGET,
+        'changeNew': Sokoban.ITEM_MAN
+    };
+
+    action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
+        'before' :'',
+        'changeOld': Sokoban.ITEM_TARGET,
+        'changeNew': Sokoban.ITEM_MAN_TARGET
+    };
+
+    action[Sokoban.ITEM_BOX][Sokoban.ITEM_EMPTY] = {
+        'before' : '',
+        'changeOld': Sokoban.ITEM_EMPTY,
+        'changeNew': Sokoban.ITEM_BOX
+    };
+
+    var oldManState = this.field[this.man.top][this.man.left];
+    var newManState = this.field[newman.top][newman.left];
+    var newBoxState = this.field[newbox.top][newbox.left];
+    console.dir(action[oldManState]);
+    if (action[oldManState] != undefined) {
+        var doAction = action[oldManState][newManState];
         if (doAction != undefined) {
-            this.field[this.man.top][this.man.left] = doAction['changeOld'];
-            this.field[newman.top][newman.left] = doAction['changeNew'];
-            this.updateClass(this.man.top, this.man.left);
-            this.updateClass(newman.top, newman.left);
-            console.log(this.man, newman);
-            this.man.left = newman.left;
-            this.man.top = newman.top;
+            if (doAction['before'] == 1) {
+                if (action[newManState] != undefined) {
+                    var doTwoAction = action[newManState][newBoxState];
+                    if (doTwoAction != undefined) {
+                        this.field[newman.top][newman.left] = doTwoAction['changeOld'];
+                        this.field[newbox.top][newbox.left] = doTwoAction['changeNew'];
+                        this.updateClass(newman.top, newman.left);
+                        this.updateClass(newbox.top, newbox.left);
+                        console.log(this.man, newman, newbox);
+                        //this.man.left = newman.left;
+                        //this.man.top = newman.top;
+                    }
+                }
+            } else {
+                this.field[this.man.top][this.man.left] = doAction['changeOld'];
+                this.field[newman.top][newman.left] = doAction['changeNew'];
+                this.updateClass(this.man.top, this.man.left);
+                this.updateClass(newman.top, newman.left);
+                console.log(this.man, newman, newbox);
+                this.man.left = newman.left;
+                this.man.top = newman.top;
+            }
         }
     }
 }
