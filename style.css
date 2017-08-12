@@ -1,0 +1,53 @@
+ .sokoban {
+    position: relative;
+
+    overflow: hidden;
+
+    background: gray;
+}
+
+.sokoban__item-target {
+    position: absolute;
+
+    box-sizing: border-box;
+
+    border: 3px double white;
+    background: red;
+}
+
+.sokoban__item-solved {
+    position: absolute;
+
+    box-sizing: border-box;
+
+    border: 3px double white;
+    background: green;
+}
+
+
+.sokoban__item-wall {
+    position: absolute;
+
+    box-sizing: border-box;
+
+    border: 3px double white;
+    background: black;
+}
+
+.sokoban__item-man {
+    position: absolute;
+
+    box-sizing: border-box;
+
+    border: 3px double white;
+    background: yellow;
+}
+
+.sokoban__item-box {
+    position: absolute;
+
+    box-sizing: border-box;
+
+    border: 3px double white;
+    background: blue;
+}
