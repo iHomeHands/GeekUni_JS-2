@@ -6,6 +6,7 @@ function Sokoban(options) {
     this.field = [];
     this.man = { 'top': 0, 'left': 0 };
     this.targets = [];
+    this.mouse = { 'top': 0, 'left': 0 };
     this.init();
     this.done = false;
 }
@@ -76,15 +77,43 @@ Sokoban.prototype.loadField = function() {
             var sokobanItem = document.createElement('div');
             sokobanItem.className = Sokoban.stateClass[this.field[i][j]];
             sokobanItem.id = 'item' + i + '_' + j;
+            sokobanItem.dataset.top = i;
+            sokobanItem.dataset.left = j;
             sokobanItem.style.width =
                 sokobanItem.style.height = this.options.cellSize + 'px';
 
             sokobanItem.style.top = (i * this.options.cellSize) + 'px';
             sokobanItem.style.left = (j * this.options.cellSize) + 'px';
+            var _this = this;
+            sokobanItem.addEventListener("click", function() {
+                _this.selectFromMouse(this.dataset.top, this.dataset.left);
+            });
             this.element.appendChild(sokobanItem);
         }
     }
     console.log(this.field);
+}
+
+Sokoban.prototype.selectFromMouse = function(top, left) {
+    if (top < 0) return;
+    if (left < 0) return;
+    if (top >= this.Width) return;
+    if (left >= this.Height) return;
+    if (this.field[top][left] == Sokoban.ITEM_EMPTY) {
+    	alert('goto');
+    	return;
+    }
+    if (this.field[top][left] == Sokoban.ITEM_TARGET) {
+        if (this.field[this.mouse.top][this.mouse.left] == Sokoban.ITEM_BOX) {
+            alert('go target');
+        } else {
+            alert('no target');
+        }
+    } else if ((this.field[top][left] == Sokoban.ITEM_BOX) ||
+        (this.field[top][left] == Sokoban.ITEM_SOLVED)) {
+        this.mouse.top = top;
+        this.mouse.left = left;
+    }
 }
 
 Sokoban.prototype.changeClass = function(top, left, type) {
