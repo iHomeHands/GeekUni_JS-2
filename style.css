@@ -43,6 +43,15 @@
     background: yellow;
 }
 
+.sokoban__item-man-target {
+    position: absolute;
+
+    box-sizing: border-box;
+
+    border: 3px double white;
+    background: lightyellow;
+}
+
 .sokoban__item-box {
     position: absolute;
 

@@ -32,6 +32,7 @@ Sokoban.ITEM_TARGET = 2;
 Sokoban.ITEM_BOX = 3;
 Sokoban.ITEM_SOLVED = 4;
 Sokoban.ITEM_WALL = 5;
+Sokoban.ITEM_MAN_TARGET = 6;
 Sokoban.stateChar = {};
 Sokoban.stateClass = {};
 
@@ -46,6 +47,7 @@ Sokoban.assignData(Sokoban.ITEM_TARGET, '.', 'sokoban__item-target');
 Sokoban.assignData(Sokoban.ITEM_BOX, '$', 'sokoban__item-box');
 Sokoban.assignData(Sokoban.ITEM_SOLVED, '+', 'sokoban__item-solved');
 Sokoban.assignData(Sokoban.ITEM_EMPTY, ' ', 'sokoban__item-empty');
+Sokoban.assignData(Sokoban.ITEM_MAN_TARGET, '*', 'sokoban__item-man-target');
 
 Sokoban.prototype.loadField = function() {
     this.element.style.width = (this.options.level.Width * this.options.cellSize) + 'px';
@@ -96,11 +98,9 @@ Sokoban.prototype.doStep = function(direction) {
     var newman = JSON.parse(JSON.stringify(this.man));
     newman.left += ofs[direction].dy;
     newman.top += ofs[direction].dx;
-    //console.log(this.man, newman, this.field[newman.top][newman.left]);
 
     var action = [];
     action[Sokoban.ITEM_MAN] = [];
-    //console.dir(Sokoban.ITEM_MAN, action);
     action[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = { 'changeOld': Sokoban.ITEM_EMPTY, 'changeNew': Sokoban.ITEM_MAN };
 
     var oldState = this.field[this.man.top][this.man.left];
@@ -108,7 +108,7 @@ Sokoban.prototype.doStep = function(direction) {
     console.dir(action[oldState]);
     if (action[oldState] != undefined) {
         var doAction = action[oldState][newState];
-        if (doAction != 'undefined') {
+        if (doAction != undefined) {
             this.field[this.man.top][this.man.left] = doAction['changeOld'];
             this.field[newman.top][newman.left] = doAction['changeNew'];
             this.updateClass(this.man.top, this.man.left);
