@@ -5,7 +5,9 @@ function Sokoban(options) {
     this.element = this.options.element;
     this.field = [];
     this.man = { 'top': 0, 'left': 0 };
+    this.targets = [];
     this.init();
+    this.done = false;
 }
 
 Sokoban.prototype.init = function() {
@@ -60,11 +62,17 @@ Sokoban.prototype.loadField = function() {
             } else {
                 this.field[i][j] = Sokoban.getType(' ');
             }
-            if ((this.field[i][j] == Sokoban.ITEM_MAN)||
-            	(this.field[i][j] == Sokoban.ITEM_MAN_TARGET)) {
+            if ((this.field[i][j] == Sokoban.ITEM_MAN) ||
+                (this.field[i][j] == Sokoban.ITEM_MAN_TARGET)) {
                 this.man.top = i;
                 this.man.left = j;
             }
+            if ((this.field[i][j] == Sokoban.ITEM_TARGET) ||
+                (this.field[i][j] == Sokoban.ITEM_MAN_TARGET) ||
+                (this.field[i][j] == Sokoban.ITEM_SOLVED)) {
+                this.targets.push({ 'top': i, 'left': j });
+            }
+
             var sokobanItem = document.createElement('div');
             sokobanItem.className = Sokoban.stateClass[this.field[i][j]];
             sokobanItem.id = 'item' + i + '_' + j;
@@ -88,6 +96,24 @@ Sokoban.prototype.updateClass = function(top, left) {
     var itemName = 'item' + top + '_' + left;
     document.getElementById(itemName).className = Sokoban.stateClass[this.field[top][left]];
 };
+
+Sokoban.prototype.isSolved = function() {
+    var count = 0;
+    for (var ArrKey in this.targets) {
+        var type = this.field[this.targets[ArrKey]['top']]
+            [this.targets[ArrKey]['left']];
+        if (type != Sokoban.ITEM_SOLVED) {
+            count++;
+        }
+    };
+    if (count == 0) {
+        if (this.done == false) {
+            this.done = true;
+            alert('Solved');
+        }
+    }
+    console.log(count);
+}
 
 Sokoban.prototype.doStep = function(direction) {
     var ofs = [];
@@ -201,6 +227,7 @@ Sokoban.prototype.doStep = function(direction) {
                         this.updateClass(newbox.top, newbox.left);
                         console.log(this.man, newman, newbox);
                         this.doStep(direction);
+                        return;
                         //this.man.left = newman.left;
                         //this.man.top = newman.top;
                     }
@@ -213,6 +240,8 @@ Sokoban.prototype.doStep = function(direction) {
                 console.log(this.man, newman, newbox);
                 this.man.left = newman.left;
                 this.man.top = newman.top;
+                var _this = this;
+                setTimeout(function() { _this.isSolved() }, 500);
             }
         }
     }
@@ -238,6 +267,25 @@ new Sokoban({
     element: document.getElementById('sokoban'),
     cellSize: 30,
     level: {
+        Id: "#1",
+        Width: 19,
+        Height: 11,
+        L: [
+            "    #####",
+            "    #   #",
+            "    #   #",
+            "  ###   ##",
+            "  #      #",
+            "### # ## #   ######",
+            "#   # ## #####    #",
+            "# $  $           .#",
+            "#####$### #@##  ..#",
+            "    #     #########",
+            "    #######"
+        ]
+
+    },
+    level1: {
         Id: 2,
         Width: 7,
         Height: 11,
