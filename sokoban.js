@@ -43,17 +43,24 @@ Sokoban.MOVE_TOP = 0;
 Sokoban.MOVE_BOTTOM = 1;
 Sokoban.MOVE_LEFT = 2;
 Sokoban.MOVE_RIGHT = 3;
+Sokoban.MOVE_PUSH_TOP = 4;
+Sokoban.MOVE_PUSH_BOTTOM = 5;
+Sokoban.MOVE_PUSH_LEFT = 6;
+Sokoban.MOVE_PUSH_RIGHT = 7;
+
 
 Sokoban.stateChar = {};
 Sokoban.stateClass = {};
 Sokoban.descDirection = [];
 Sokoban.action = [];
 Sokoban.reverseAction = [];
+Sokoban.reverseSimple = [];
 
 Sokoban.descDirection[Sokoban.MOVE_TOP] = {
     'dx': -1,
     'dy': 0,
     'short': 'U',
+    'push': Sokoban.MOVE_PUSH_TOP,
     'shortReverse': 'D',
     'reverse': Sokoban.MOVE_BOTTOM
 };
@@ -62,6 +69,7 @@ Sokoban.descDirection[Sokoban.MOVE_BOTTOM] = {
     'dx': 1,
     'dy': 0,
     'short': 'D',
+    'push': Sokoban.MOVE_PUSH_BOTTOM,
     'shortReverse': 'U',
     'reverse': Sokoban.MOVE_TOP
 };
@@ -70,6 +78,7 @@ Sokoban.descDirection[Sokoban.MOVE_LEFT] = {
     'dx': 0,
     'dy': -1,
     'short': 'L',
+    'push': Sokoban.MOVE_PUSH_RIGHT,
     'shortReverse': 'R',
     'reverse': Sokoban.MOVE_RIGHT
 };
@@ -78,7 +87,36 @@ Sokoban.descDirection[Sokoban.MOVE_RIGHT] = {
     'dx': 0,
     'dy': 1,
     'short': 'R',
+    'push': Sokoban.MOVE_PUSH_LEFT,
     'shortReverse': 'L',
+    'reverse': Sokoban.MOVE_LEFT
+};
+
+Sokoban.descDirection[Sokoban.MOVE_PUSH_TOP] = {
+    'dx': -1,
+    'dy': 0,
+    'short': 'T',
+    'reverse': Sokoban.MOVE_BOTTOM
+};
+
+Sokoban.descDirection[Sokoban.MOVE_PUSH_BOTTOM] = {
+    'dx': 1,
+    'dy': 0,
+    'short': 'B',
+    'reverse': Sokoban.MOVE_TOP
+};
+
+Sokoban.descDirection[Sokoban.MOVE_PUSH_LEFT] = {
+    'dx': 0,
+    'dy': -1,
+    'short': 'A',
+    'reverse': Sokoban.MOVE_RIGHT
+};
+
+Sokoban.descDirection[Sokoban.MOVE_PUSH_RIGHT] = {
+    'dx': 0,
+    'dy': 1,
+    'short': 'S',
     'reverse': Sokoban.MOVE_LEFT
 };
 
@@ -88,68 +126,89 @@ Sokoban.action[Sokoban.ITEM_BOX] = [];
 Sokoban.action[Sokoban.ITEM_SOLVED] = [];
 
 Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
-    'before': '',
     'changeOld': Sokoban.ITEM_EMPTY,
     'changeNew': Sokoban.ITEM_MAN
 };
 
 Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_TARGET] = {
-    'before': '',
     'changeOld': Sokoban.ITEM_EMPTY,
     'changeNew': Sokoban.ITEM_MAN_TARGET
 };
 
 Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX] = {
-    'before': '1',
+    'before': []
+};
+
+Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX]['before'][Sokoban.ITEM_EMPTY] = {
+    'changeOld': Sokoban.ITEM_EMPTY,
+    'changeNew': Sokoban.ITEM_MAN,
+    'changeBefore': Sokoban.ITEM_BOX
+};
+
+Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX]['before'][Sokoban.ITEM_TARGET] = {
+    'changeOld': Sokoban.ITEM_EMPTY,
+    'changeNew': Sokoban.ITEM_MAN,
+    'changeBefore': Sokoban.ITEM_SOLVED
 };
 
 Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_SOLVED] = {
-    'before': '1',
+    'before': []
 };
 
+Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_SOLVED]['before'][Sokoban.ITEM_TARGET] = {
+    'changeOld': Sokoban.ITEM_EMPTY,
+    'changeNew': Sokoban.ITEM_MAN_TARGET,
+    'changeBefore': Sokoban.ITEM_SOLVED
+};
+
+
+// Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_SOLVED] = {
+//     'before': '1',
+// };
+
 Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
-    'before': '',
     'changeOld': Sokoban.ITEM_TARGET,
     'changeNew': Sokoban.ITEM_MAN
 };
 
-Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_BOX] = {
-    'before': '1',
-};
+// Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_BOX] = {
+//     'before': '1',
+// };
 
-Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_SOLVED] = {
-    'before': '1',
-};
+// Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_SOLVED] = {
+//     'before': [],
+//     'changeOld': Sokoban.Sokoban.ITEITEM_TARGET,
+//     'changeNew': Sokoban.ITEM_MAN_TARGET
+// };
 
 Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
-    'before': '',
     'changeOld': Sokoban.ITEM_TARGET,
     'changeNew': Sokoban.ITEM_MAN_TARGET
 };
 
-Sokoban.action[Sokoban.ITEM_BOX][Sokoban.ITEM_EMPTY] = {
-    'before': '',
-    'changeOld': Sokoban.ITEM_EMPTY,
-    'changeNew': Sokoban.ITEM_BOX
-};
+// Sokoban.action[Sokoban.ITEM_BOX][Sokoban.ITEM_EMPTY] = {
+//     'before': [],
+//     'changeOld': Sokoban.ITEM_EMPTY,
+//     'changeNew': Sokoban.ITEM_BOX
+// };
 
-Sokoban.action[Sokoban.ITEM_BOX][Sokoban.ITEM_TARGET] = {
-    'before': '',
-    'changeOld': Sokoban.ITEM_EMPTY,
-    'changeNew': Sokoban.ITEM_SOLVED
-};
+// Sokoban.action[Sokoban.ITEM_BOX][Sokoban.ITEM_TARGET] = {
+//     'before': [],
+//     'changeOld': Sokoban.ITEM_EMPTY,
+//     'changeNew': Sokoban.ITEM_SOLVED
+// };
 
-Sokoban.action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_TARGET] = {
-    'before': '',
-    'changeOld': Sokoban.ITEM_TARGET,
-    'changeNew': Sokoban.ITEM_SOLVED
-};
+// Sokoban.action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_TARGET] = {
+//     'before': '',
+//     'changeOld': Sokoban.ITEM_TARGET,
+//     'changeNew': Sokoban.ITEM_SOLVED
+// };
 
-Sokoban.action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_EMPTY] = {
-    'before': '',
-    'changeOld': Sokoban.ITEM_TARGET,
-    'changeNew': Sokoban.ITEM_BOX
-};
+// Sokoban.action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_EMPTY] = {
+//     'before': '',
+//     'changeOld': Sokoban.ITEM_TARGET,
+//     'changeNew': Sokoban.ITEM_BOX
+// };
 
 Sokoban.reverseAction[Sokoban.ITEM_MAN] = [];
 Sokoban.reverseAction[Sokoban.ITEM_MAN_TARGET] = [];
@@ -157,21 +216,30 @@ Sokoban.reverseAction[Sokoban.ITEM_MAN_TARGET] = [];
 Sokoban.reverseAction[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
     'changeOld': Sokoban.ITEM_EMPTY,
     'changeNew': Sokoban.ITEM_MAN,
-    'before': [
-        Sokoban.ITEM_BOX = {
-            'changeNew': Sokoban.ITEM_MAN,
-            'changeOld': Sokoban.ITEM_BOX,
-            'changeBefore': Sokoban.ITEM_EMPTY,
-        }
-    ]
+    'before': []
 };
 
-Sokoban.reverseAction[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
+Sokoban.reverseAction[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY]['before'][Sokoban.ITEM_BOX] = {
+    'changeNew': Sokoban.ITEM_MAN,
+    'changeOld': Sokoban.ITEM_BOX,
+    'changeBefore': Sokoban.ITEM_EMPTY
+};
+
+Sokoban.reverseSimple[Sokoban.ITEM_MAN] = [];
+
+Sokoban.reverseSimple[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
+    'changeOld': Sokoban.ITEM_EMPTY,
+    'changeNew': Sokoban.ITEM_MAN
+};
+
+Sokoban.reverseSimple[Sokoban.ITEM_MAN_TARGET] = [];
+
+Sokoban.reverseSimple[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
     'changeOld': Sokoban.ITEM_TARGET,
     'changeNew': Sokoban.ITEM_MAN
 };
 
-Sokoban.reverseAction[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
+Sokoban.reverseSimple[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
     'changeOld': Sokoban.ITEM_TARGET,
     'changeNew': Sokoban.ITEM_MAN_TARGET
 };
@@ -293,25 +361,71 @@ Sokoban.prototype.checkReturn = function() {
     } else {
         var direction = this.moves.pop();
         this.moves.push(direction);
-        this.doReturn(Sokoban.descDirection[direction]['reverse']);
+        switch (direction) {
+            case Sokoban.MOVE_TOP:
+            case Sokoban.MOVE_BOTTOM:
+            case Sokoban.MOVE_LEFT:
+            case Sokoban.MOVE_RIGHT:
+                this.doReturnSimple(direction);
+                break;
+
+            case Sokoban.MOVE_PUSH_TOP:
+            case Sokoban.MOVE_PUSH_BOTTOM:
+            case Sokoban.MOVE_PUSH_LEFT:
+            case Sokoban.MOVE_PUSH_RIGHT:
+                this.doReturnPush(direction);
+                break;
+            default:
+                {
+                    console.log('Error')
+                }
+        }
     }
 }
 
-Sokoban.prototype.doReturn = function(direction) {
+Sokoban.prototype.doReturnSimple = function(direction) {
+    //console.log(direction);
+    var newman = JSON.parse(JSON.stringify(this.man));
+    newman.left += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dy;
+    newman.top += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dx;
+
+    var oldManState = this.field[this.man.top][this.man.left];
+
+    var newManState = this.field[newman.top][newman.left];
+    if (Sokoban.reverseSimple[oldManState] != undefined) {
+        var doAction = Sokoban.reverseSimple[oldManState][newManState];
+        if (doAction != undefined) {
+            this.field[this.man.top][this.man.left] = doAction['changeOld'];
+            this.field[newman.top][newman.left] = doAction['changeNew'];
+            this.updateClass(this.man.top, this.man.left);
+            this.updateClass(newman.top, newman.left);
+            this.man.left = newman.left;
+            this.man.top = newman.top;
+            this.moves.pop();
+            this.viewMoves();
+            var _this = this;
+            setTimeout(function() { _this.isSolved() }, 500);
+        }
+    }
+}
+
+Sokoban.prototype.doReturnPush = function(direction) {
+    console.log(direction);
     var newman = JSON.parse(JSON.stringify(this.man));
     newman.left += Sokoban.descDirection[direction].dy;
     newman.top += Sokoban.descDirection[direction].dx;
 
     var newbox = JSON.parse(JSON.stringify(this.man));
-    newbox.left += Sokoban.descDirection[direction].dy * 2;
-    newbox.top += Sokoban.descDirection[direction].dx * 2;
+    newbox.left += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dy;
+    newbox.top += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dx;
 
     var oldManState = this.field[this.man.top][this.man.left];
 
     var newManState = this.field[newman.top][newman.left];
 
     var newBoxState = this.field[newbox.top][newbox.left];
-
+    //console.log(this.man, newman, newbox);
+    //console.log(oldManState, newManState, newBoxState);
     if (Sokoban.reverseAction[oldManState] != undefined) {
         var doAction = Sokoban.reverseAction[oldManState][newManState];
         if (doAction != undefined) {
@@ -333,8 +447,6 @@ Sokoban.prototype.doReturn = function(direction) {
                     this.viewMoves();
                     var _this = this;
                     setTimeout(function() { _this.isSolved() }, 500);
-
-                    alert('test');
                     done = true;
                 }
             }
@@ -343,7 +455,6 @@ Sokoban.prototype.doReturn = function(direction) {
                 this.field[newman.top][newman.left] = doAction['changeNew'];
                 this.updateClass(this.man.top, this.man.left);
                 this.updateClass(newman.top, newman.left);
-                //console.log(this.man, newman, newbox);
                 this.man.left = newman.left;
                 this.man.top = newman.top;
                 this.moves.pop();
@@ -354,10 +465,9 @@ Sokoban.prototype.doReturn = function(direction) {
 
         }
     }
-    console.log(this.man, newman, newbox);
-    console.log('Return ' + Sokoban.descDirection[direction]['short']);
+    //console.log(this.man, newman, newbox);
+    //console.log('Return ' + Sokoban.descDirection[direction]['short']);
 }
-
 
 Sokoban.prototype.doStep = function(direction) {
 
@@ -375,31 +485,34 @@ Sokoban.prototype.doStep = function(direction) {
 
     var newBoxState = this.field[newbox.top][newbox.left];
 
-    //console.dir(action[oldManState]);
     if (Sokoban.action[oldManState] != undefined) {
         var doAction = Sokoban.action[oldManState][newManState];
         if (doAction != undefined) {
-            if (doAction['before'] == 1) {
-                if (Sokoban.action[newManState] != undefined) {
-                    var doTwoAction = Sokoban.action[newManState][newBoxState];
-                    if (doTwoAction != undefined) {
-                        this.field[newman.top][newman.left] = doTwoAction['changeOld'];
-                        this.field[newbox.top][newbox.left] = doTwoAction['changeNew'];
-                        this.updateClass(newman.top, newman.left);
-                        this.updateClass(newbox.top, newbox.left);
-                        //console.log(this.man, newman, newbox);
-                        this.doStep(direction);
-                        return;
-                        //this.man.left = newman.left;
-                        //this.man.top = newman.top;
-                    }
+            var done = false;
+            if (doAction['before'] != undefined) {
+                if (doAction['before'][newBoxState] != undefined) {
+                    this.field[this.man.top][this.man.left] =
+                        doAction['before'][newBoxState]['changeOld'];
+                    this.field[newman.top][newman.left] =
+                        doAction['before'][newBoxState]['changeNew'];
+                    this.field[newbox.top][newbox.left] =
+                        doAction['before'][newBoxState]['changeBefore'];
+                    this.updateClass(this.man.top, this.man.left);
+                    this.updateClass(newman.top, newman.left);
+                    this.updateClass(newbox.top, newbox.left);
+                    this.man.left = newman.left;
+                    this.man.top = newman.top;
+                    this.moves.push(Sokoban.descDirection[direction]['push']);
+                    this.viewMoves();
+                    var _this = this;
+                    setTimeout(function() { _this.isSolved() }, 500);
+                    done = true;
                 }
             } else {
                 this.field[this.man.top][this.man.left] = doAction['changeOld'];
                 this.field[newman.top][newman.left] = doAction['changeNew'];
                 this.updateClass(this.man.top, this.man.left);
                 this.updateClass(newman.top, newman.left);
-                //console.log(this.man, newman, newbox);
                 this.man.left = newman.left;
                 this.man.top = newman.top;
                 this.moves.push(direction);
