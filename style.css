@@ -49,6 +49,13 @@
     box-sizing: border-box;
 }
 
+.sokoban__item-none {
+    position: absolute;
+
+    box-sizing: border-box;
+}
+
+
 .sokoban__item-man-target {
     position: absolute;
 
