@@ -5,6 +5,10 @@ function Sokoban(options) {
     this.element = this.options.element;
     this.field = [];
     this.man = { 'top': 0, 'left': 0 };
+    this.targets = [];
+    this.mouse = { 'top': 0, 'left': 0 };
+    this.moves = [];
+    this.done = false;
     this.init();
 }
 
@@ -33,13 +37,213 @@ Sokoban.ITEM_BOX = 3;
 Sokoban.ITEM_SOLVED = 4;
 Sokoban.ITEM_WALL = 5;
 Sokoban.ITEM_MAN_TARGET = 6;
-Sokoban.stateChar = {};
-Sokoban.stateClass = {};
+Sokoban.ITEM_NONE = 7;
 
 Sokoban.MOVE_TOP = 0;
 Sokoban.MOVE_BOTTOM = 1;
 Sokoban.MOVE_LEFT = 2;
 Sokoban.MOVE_RIGHT = 3;
+Sokoban.MOVE_PUSH_TOP = 4;
+Sokoban.MOVE_PUSH_BOTTOM = 5;
+Sokoban.MOVE_PUSH_LEFT = 6;
+Sokoban.MOVE_PUSH_RIGHT = 7;
+
+
+Sokoban.stateChar = {};
+Sokoban.stateClass = {};
+Sokoban.descDirection = [];
+Sokoban.action = [];
+Sokoban.reverseAction = [];
+Sokoban.reverseSimple = [];
+
+Sokoban.descDirection[Sokoban.MOVE_TOP] = {
+    'dx': -1,
+    'dy': 0,
+    'short': 'U',
+    'push': Sokoban.MOVE_PUSH_TOP,
+    'shortReverse': 'D',
+    'reverse': Sokoban.MOVE_BOTTOM
+};
+
+Sokoban.descDirection[Sokoban.MOVE_BOTTOM] = {
+    'dx': 1,
+    'dy': 0,
+    'short': 'D',
+    'push': Sokoban.MOVE_PUSH_BOTTOM,
+    'shortReverse': 'U',
+    'reverse': Sokoban.MOVE_TOP
+};
+
+Sokoban.descDirection[Sokoban.MOVE_LEFT] = {
+    'dx': 0,
+    'dy': -1,
+    'short': 'L',
+    'push': Sokoban.MOVE_PUSH_RIGHT,
+    'shortReverse': 'R',
+    'reverse': Sokoban.MOVE_RIGHT
+};
+
+Sokoban.descDirection[Sokoban.MOVE_RIGHT] = {
+    'dx': 0,
+    'dy': 1,
+    'short': 'R',
+    'push': Sokoban.MOVE_PUSH_LEFT,
+    'shortReverse': 'L',
+    'reverse': Sokoban.MOVE_LEFT
+};
+
+Sokoban.descDirection[Sokoban.MOVE_PUSH_TOP] = {
+    'dx': -1,
+    'dy': 0,
+    'short': 'T',
+    'reverse': Sokoban.MOVE_BOTTOM
+};
+
+Sokoban.descDirection[Sokoban.MOVE_PUSH_BOTTOM] = {
+    'dx': 1,
+    'dy': 0,
+    'short': 'B',
+    'reverse': Sokoban.MOVE_TOP
+};
+
+Sokoban.descDirection[Sokoban.MOVE_PUSH_LEFT] = {
+    'dx': 0,
+    'dy': -1,
+    'short': 'A',
+    'reverse': Sokoban.MOVE_RIGHT
+};
+
+Sokoban.descDirection[Sokoban.MOVE_PUSH_RIGHT] = {
+    'dx': 0,
+    'dy': 1,
+    'short': 'S',
+    'reverse': Sokoban.MOVE_LEFT
+};
+
+Sokoban.action[Sokoban.ITEM_MAN] = [];
+Sokoban.action[Sokoban.ITEM_MAN_TARGET] = [];
+Sokoban.action[Sokoban.ITEM_BOX] = [];
+Sokoban.action[Sokoban.ITEM_SOLVED] = [];
+
+Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
+    'changeOld': Sokoban.ITEM_EMPTY,
+    'changeNew': Sokoban.ITEM_MAN
+};
+
+Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_TARGET] = {
+    'changeOld': Sokoban.ITEM_EMPTY,
+    'changeNew': Sokoban.ITEM_MAN_TARGET
+};
+
+Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX] = {
+    'before': []
+};
+
+Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX]['before'][Sokoban.ITEM_EMPTY] = {
+    'changeOld': Sokoban.ITEM_EMPTY,
+    'changeNew': Sokoban.ITEM_MAN,
+    'changeBefore': Sokoban.ITEM_BOX
+};
+
+Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX]['before'][Sokoban.ITEM_TARGET] = {
+    'changeOld': Sokoban.ITEM_EMPTY,
+    'changeNew': Sokoban.ITEM_MAN,
+    'changeBefore': Sokoban.ITEM_SOLVED
+};
+
+Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_SOLVED] = {
+    'before': []
+};
+
+Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_SOLVED]['before'][Sokoban.ITEM_TARGET] = {
+    'changeOld': Sokoban.ITEM_EMPTY,
+    'changeNew': Sokoban.ITEM_MAN_TARGET,
+    'changeBefore': Sokoban.ITEM_SOLVED
+};
+
+
+// Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_SOLVED] = {
+//     'before': '1',
+// };
+
+Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
+    'changeOld': Sokoban.ITEM_TARGET,
+    'changeNew': Sokoban.ITEM_MAN
+};
+
+// Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_BOX] = {
+//     'before': '1',
+// };
+
+// Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_SOLVED] = {
+//     'before': [],
+//     'changeOld': Sokoban.Sokoban.ITEITEM_TARGET,
+//     'changeNew': Sokoban.ITEM_MAN_TARGET
+// };
+
+Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
+    'changeOld': Sokoban.ITEM_TARGET,
+    'changeNew': Sokoban.ITEM_MAN_TARGET
+};
+
+// Sokoban.action[Sokoban.ITEM_BOX][Sokoban.ITEM_EMPTY] = {
+//     'before': [],
+//     'changeOld': Sokoban.ITEM_EMPTY,
+//     'changeNew': Sokoban.ITEM_BOX
+// };
+
+// Sokoban.action[Sokoban.ITEM_BOX][Sokoban.ITEM_TARGET] = {
+//     'before': [],
+//     'changeOld': Sokoban.ITEM_EMPTY,
+//     'changeNew': Sokoban.ITEM_SOLVED
+// };
+
+// Sokoban.action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_TARGET] = {
+//     'before': '',
+//     'changeOld': Sokoban.ITEM_TARGET,
+//     'changeNew': Sokoban.ITEM_SOLVED
+// };
+
+// Sokoban.action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_EMPTY] = {
+//     'before': '',
+//     'changeOld': Sokoban.ITEM_TARGET,
+//     'changeNew': Sokoban.ITEM_BOX
+// };
+
+Sokoban.reverseAction[Sokoban.ITEM_MAN] = [];
+Sokoban.reverseAction[Sokoban.ITEM_MAN_TARGET] = [];
+
+Sokoban.reverseAction[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
+    'changeOld': Sokoban.ITEM_EMPTY,
+    'changeNew': Sokoban.ITEM_MAN,
+    'before': []
+};
+
+Sokoban.reverseAction[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY]['before'][Sokoban.ITEM_BOX] = {
+    'changeNew': Sokoban.ITEM_MAN,
+    'changeOld': Sokoban.ITEM_BOX,
+    'changeBefore': Sokoban.ITEM_EMPTY
+};
+
+Sokoban.reverseSimple[Sokoban.ITEM_MAN] = [];
+
+Sokoban.reverseSimple[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
+    'changeOld': Sokoban.ITEM_EMPTY,
+    'changeNew': Sokoban.ITEM_MAN
+};
+
+Sokoban.reverseSimple[Sokoban.ITEM_MAN_TARGET] = [];
+
+Sokoban.reverseSimple[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
+    'changeOld': Sokoban.ITEM_TARGET,
+    'changeNew': Sokoban.ITEM_MAN
+};
+
+Sokoban.reverseSimple[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
+    'changeOld': Sokoban.ITEM_TARGET,
+    'changeNew': Sokoban.ITEM_MAN_TARGET
+};
+
 
 Sokoban.assignData(Sokoban.ITEM_WALL, '#', 'sokoban__item-wall');
 Sokoban.assignData(Sokoban.ITEM_MAN, '@', 'sokoban__item-man');
@@ -50,33 +254,67 @@ Sokoban.assignData(Sokoban.ITEM_EMPTY, ' ', 'sokoban__item-empty');
 Sokoban.assignData(Sokoban.ITEM_MAN_TARGET, '+', 'sokoban__item-man-target');
 
 Sokoban.prototype.loadField = function() {
-    this.element.style.width = (this.options.level.Width * this.options.cellSize) + 'px';
-    this.element.style.height = (this.options.level.Height * this.options.cellSize) + 'px';
-    for (var i = 0; i < this.options.level.Height; i++) {
+    this.element.style.width = (this.options.level[this.options.levelId].Width * this.options.cellSize) + 'px';
+    this.element.style.height = (this.options.level[this.options.levelId].Height * this.options.cellSize) + 'px';
+    for (var i = 0; i < this.options.level[this.options.levelId].Height; i++) {
         this.field[i] = [];
-        for (var j = 0; j < this.options.level.Width; j++) {
-            if (this.options.level.L[i].length > j) {
-                this.field[i][j] = Sokoban.getType(this.options.level.L[i].charAt(j));
+        for (var j = 0; j < this.options.level[this.options.levelId].Width; j++) {
+            if (this.options.level[this.options.levelId].L[i].length > j) {
+                this.field[i][j] = Sokoban.getType(this.options.level[this.options.levelId].L[i].charAt(j));
             } else {
                 this.field[i][j] = Sokoban.getType(' ');
             }
-            if ((this.field[i][j] == Sokoban.ITEM_MAN)||
-            	(this.field[i][j] == Sokoban.ITEM_MAN_TARGET)) {
+            if ((this.field[i][j] == Sokoban.ITEM_MAN) ||
+                (this.field[i][j] == Sokoban.ITEM_MAN_TARGET)) {
                 this.man.top = i;
                 this.man.left = j;
             }
+            if ((this.field[i][j] == Sokoban.ITEM_TARGET) ||
+                (this.field[i][j] == Sokoban.ITEM_MAN_TARGET) ||
+                (this.field[i][j] == Sokoban.ITEM_SOLVED)) {
+                this.targets.push({ 'top': i, 'left': j });
+            }
+
             var sokobanItem = document.createElement('div');
             sokobanItem.className = Sokoban.stateClass[this.field[i][j]];
             sokobanItem.id = 'item' + i + '_' + j;
+            sokobanItem.dataset.top = i;
+            sokobanItem.dataset.left = j;
             sokobanItem.style.width =
                 sokobanItem.style.height = this.options.cellSize + 'px';
 
             sokobanItem.style.top = (i * this.options.cellSize) + 'px';
             sokobanItem.style.left = (j * this.options.cellSize) + 'px';
+            var _this = this;
+            sokobanItem.addEventListener("click", function() {
+                _this.selectFromMouse(this.dataset.top, this.dataset.left);
+            });
             this.element.appendChild(sokobanItem);
         }
     }
     console.log(this.field);
+}
+
+Sokoban.prototype.selectFromMouse = function(top, left) {
+    if (top < 0) return;
+    if (left < 0) return;
+    if (top >= this.Width) return;
+    if (left >= this.Height) return;
+    if (this.field[top][left] == Sokoban.ITEM_EMPTY) {
+        alert('goto');
+        return;
+    }
+    if (this.field[top][left] == Sokoban.ITEM_TARGET) {
+        if (this.field[this.mouse.top][this.mouse.left] == Sokoban.ITEM_BOX) {
+            alert('go target');
+        } else {
+            alert('no target');
+        }
+    } else if ((this.field[top][left] == Sokoban.ITEM_BOX) ||
+        (this.field[top][left] == Sokoban.ITEM_SOLVED)) {
+        this.mouse.top = top;
+        this.mouse.left = left;
+    }
 }
 
 Sokoban.prototype.changeClass = function(top, left, type) {
@@ -89,130 +327,198 @@ Sokoban.prototype.updateClass = function(top, left) {
     document.getElementById(itemName).className = Sokoban.stateClass[this.field[top][left]];
 };
 
-Sokoban.prototype.doStep = function(direction) {
-    var ofs = [];
-    ofs[Sokoban.MOVE_TOP] = { 'dx': -1, 'dy': 0 };
-    ofs[Sokoban.MOVE_BOTTOM] = { 'dx': 1, 'dy': 0 };
-    ofs[Sokoban.MOVE_LEFT] = { 'dx': 0, 'dy': -1 };
-    ofs[Sokoban.MOVE_RIGHT] = { 'dx': 0, 'dy': 1 };
+Sokoban.prototype.isSolved = function() {
+    var count = 0;
+    for (var ArrKey in this.targets) {
+        var type = this.field[this.targets[ArrKey]['top']]
+            [this.targets[ArrKey]['left']];
+        if (type != Sokoban.ITEM_SOLVED) {
+            count++;
+        }
+    };
+    if (count == 0) {
+        if (this.done == false) {
+            this.done = true;
+            alert('Solved ' + this.moves);
+        }
+    }
+}
 
+Sokoban.prototype.viewMoves = function() {
+    var path = ''
+    for (var ArrKey in this.moves) {
+        path += Sokoban.descDirection[this.moves[ArrKey]]['short'];
+    }
+    console.log(path);
+}
+
+Sokoban.prototype.checkReturn = function() {
+    if (this.done) {
+        return;
+    }
+    if (this.moves.length == 0) {
+        console.log('empty return');
+    } else {
+        var direction = this.moves.pop();
+        this.moves.push(direction);
+        switch (direction) {
+            case Sokoban.MOVE_TOP:
+            case Sokoban.MOVE_BOTTOM:
+            case Sokoban.MOVE_LEFT:
+            case Sokoban.MOVE_RIGHT:
+                this.doReturnSimple(direction);
+                break;
+
+            case Sokoban.MOVE_PUSH_TOP:
+            case Sokoban.MOVE_PUSH_BOTTOM:
+            case Sokoban.MOVE_PUSH_LEFT:
+            case Sokoban.MOVE_PUSH_RIGHT:
+                this.doReturnPush(direction);
+                break;
+            default:
+                {
+                    console.log('Error')
+                }
+        }
+    }
+}
+
+Sokoban.prototype.doReturnSimple = function(direction) {
+    //console.log(direction);
     var newman = JSON.parse(JSON.stringify(this.man));
-    newman.left += ofs[direction].dy;
-    newman.top += ofs[direction].dx;
-    var newbox = JSON.parse(JSON.stringify(this.man));
-    newbox.left += ofs[direction].dy * 2;
-    newbox.top += ofs[direction].dx * 2;
-
-    var action = [];
-    action[Sokoban.ITEM_MAN] = [];
-    action[Sokoban.ITEM_MAN_TARGET] = [];
-    action[Sokoban.ITEM_BOX] = [];
-    action[Sokoban.ITEM_SOLVED] = [];
-
-    action[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
-        'before': '',
-        'changeOld': Sokoban.ITEM_EMPTY,
-        'changeNew': Sokoban.ITEM_MAN
-    };
-
-    action[Sokoban.ITEM_MAN][Sokoban.ITEM_TARGET] = {
-        'before': '',
-        'changeOld': Sokoban.ITEM_EMPTY,
-        'changeNew': Sokoban.ITEM_MAN_TARGET
-    };
-
-    action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX] = {
-        'before': '1',
-        //'changeOld': Sokoban.ITEM_BOX,
-        //'changeNew': Sokoban.ITEM_MAN
-    };
-
-    action[Sokoban.ITEM_MAN][Sokoban.ITEM_SOLVED] = {
-        'before': '1',
-        //'changeOld': Sokoban.ITEM_BOX,
-        //'changeNew': Sokoban.ITEM_MAN
-    };
-
-
-    action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
-        'before': '',
-        'changeOld': Sokoban.ITEM_TARGET,
-        'changeNew': Sokoban.ITEM_MAN
-    };
-
-    action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_BOX] = {
-        'before': '1',
-        //'changeOld': Sokoban.ITEM_TARGET,
-        //'changeNew': Sokoban.ITEM_MAN
-    };
-
-    action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_SOLVED] = {
-        'before': '1',
-        //'changeOld': Sokoban.ITEM_TARGET,
-        //'changeNew': Sokoban.ITEM_MAN
-    };
-
-    action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
-        'before': '',
-        'changeOld': Sokoban.ITEM_TARGET,
-        'changeNew': Sokoban.ITEM_MAN_TARGET
-    };
-
-    action[Sokoban.ITEM_BOX][Sokoban.ITEM_EMPTY] = {
-        'before': '',
-        'changeOld': Sokoban.ITEM_EMPTY,
-        'changeNew': Sokoban.ITEM_BOX
-    };
-
-    action[Sokoban.ITEM_BOX][Sokoban.ITEM_TARGET] = {
-        'before': '',
-        'changeOld': Sokoban.ITEM_EMPTY,
-        'changeNew': Sokoban.ITEM_SOLVED
-    };
-
-    action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_TARGET] = {
-        'before': '',
-        'changeOld': Sokoban.ITEM_TARGET,
-        'changeNew': Sokoban.ITEM_SOLVED
-    };
-
-    action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_EMPTY] = {
-        'before': '',
-        'changeOld': Sokoban.ITEM_TARGET,
-        'changeNew': Sokoban.ITEM_BOX
-    };
-
-
+    newman.left += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dy;
+    newman.top += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dx;
 
     var oldManState = this.field[this.man.top][this.man.left];
+
     var newManState = this.field[newman.top][newman.left];
-    var newBoxState = this.field[newbox.top][newbox.left];
-    console.dir(action[oldManState]);
-    if (action[oldManState] != undefined) {
-        var doAction = action[oldManState][newManState];
+    if (Sokoban.reverseSimple[oldManState] != undefined) {
+        var doAction = Sokoban.reverseSimple[oldManState][newManState];
         if (doAction != undefined) {
-            if (doAction['before'] == 1) {
-                if (action[newManState] != undefined) {
-                    var doTwoAction = action[newManState][newBoxState];
-                    if (doTwoAction != undefined) {
-                        this.field[newman.top][newman.left] = doTwoAction['changeOld'];
-                        this.field[newbox.top][newbox.left] = doTwoAction['changeNew'];
-                        this.updateClass(newman.top, newman.left);
-                        this.updateClass(newbox.top, newbox.left);
-                        console.log(this.man, newman, newbox);
-                        this.doStep(direction);
-                        //this.man.left = newman.left;
-                        //this.man.top = newman.top;
-                    }
+            this.field[this.man.top][this.man.left] = doAction['changeOld'];
+            this.field[newman.top][newman.left] = doAction['changeNew'];
+            this.updateClass(this.man.top, this.man.left);
+            this.updateClass(newman.top, newman.left);
+            this.man.left = newman.left;
+            this.man.top = newman.top;
+            this.moves.pop();
+            this.viewMoves();
+            var _this = this;
+            setTimeout(function() { _this.isSolved() }, 500);
+        }
+    }
+}
+
+Sokoban.prototype.doReturnPush = function(direction) {
+    console.log(direction);
+    var newman = JSON.parse(JSON.stringify(this.man));
+    newman.left += Sokoban.descDirection[direction].dy;
+    newman.top += Sokoban.descDirection[direction].dx;
+
+    var newbox = JSON.parse(JSON.stringify(this.man));
+    newbox.left += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dy;
+    newbox.top += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dx;
+
+    var oldManState = this.field[this.man.top][this.man.left];
+
+    var newManState = this.field[newman.top][newman.left];
+
+    var newBoxState = this.field[newbox.top][newbox.left];
+    //console.log(this.man, newman, newbox);
+    //console.log(oldManState, newManState, newBoxState);
+    if (Sokoban.reverseAction[oldManState] != undefined) {
+        var doAction = Sokoban.reverseAction[oldManState][newManState];
+        if (doAction != undefined) {
+            var done = false;
+            if (doAction['before'] != undefined) {
+                if (doAction['before'][newBoxState] != undefined) {
+                    this.field[this.man.top][this.man.left] =
+                        doAction['before'][newBoxState]['changeOld'];
+                    this.field[newman.top][newman.left] =
+                        doAction['before'][newBoxState]['changeNew'];
+                    this.field[newbox.top][newbox.left] =
+                        doAction['before'][newBoxState]['changeBefore'];
+                    this.updateClass(this.man.top, this.man.left);
+                    this.updateClass(newman.top, newman.left);
+                    this.updateClass(newbox.top, newbox.left);
+                    this.man.left = newman.left;
+                    this.man.top = newman.top;
+                    this.moves.pop();
+                    this.viewMoves();
+                    var _this = this;
+                    setTimeout(function() { _this.isSolved() }, 500);
+                    done = true;
+                }
+            }
+            if (!done) {
+                this.field[this.man.top][this.man.left] = doAction['changeOld'];
+                this.field[newman.top][newman.left] = doAction['changeNew'];
+                this.updateClass(this.man.top, this.man.left);
+                this.updateClass(newman.top, newman.left);
+                this.man.left = newman.left;
+                this.man.top = newman.top;
+                this.moves.pop();
+                this.viewMoves();
+                var _this = this;
+                setTimeout(function() { _this.isSolved() }, 500);
+            }
+
+        }
+    }
+    //console.log(this.man, newman, newbox);
+    //console.log('Return ' + Sokoban.descDirection[direction]['short']);
+}
+
+Sokoban.prototype.doStep = function(direction) {
+
+    var newman = JSON.parse(JSON.stringify(this.man));
+    newman.left += Sokoban.descDirection[direction].dy;
+    newman.top += Sokoban.descDirection[direction].dx;
+
+    var newbox = JSON.parse(JSON.stringify(this.man));
+    newbox.left += Sokoban.descDirection[direction].dy * 2;
+    newbox.top += Sokoban.descDirection[direction].dx * 2;
+
+    var oldManState = this.field[this.man.top][this.man.left];
+
+    var newManState = this.field[newman.top][newman.left];
+
+    var newBoxState = this.field[newbox.top][newbox.left];
+
+    if (Sokoban.action[oldManState] != undefined) {
+        var doAction = Sokoban.action[oldManState][newManState];
+        if (doAction != undefined) {
+            var done = false;
+            if (doAction['before'] != undefined) {
+                if (doAction['before'][newBoxState] != undefined) {
+                    this.field[this.man.top][this.man.left] =
+                        doAction['before'][newBoxState]['changeOld'];
+                    this.field[newman.top][newman.left] =
+                        doAction['before'][newBoxState]['changeNew'];
+                    this.field[newbox.top][newbox.left] =
+                        doAction['before'][newBoxState]['changeBefore'];
+                    this.updateClass(this.man.top, this.man.left);
+                    this.updateClass(newman.top, newman.left);
+                    this.updateClass(newbox.top, newbox.left);
+                    this.man.left = newman.left;
+                    this.man.top = newman.top;
+                    this.moves.push(Sokoban.descDirection[direction]['push']);
+                    this.viewMoves();
+                    var _this = this;
+                    setTimeout(function() { _this.isSolved() }, 500);
+                    done = true;
                 }
             } else {
                 this.field[this.man.top][this.man.left] = doAction['changeOld'];
                 this.field[newman.top][newman.left] = doAction['changeNew'];
                 this.updateClass(this.man.top, this.man.left);
                 this.updateClass(newman.top, newman.left);
-                console.log(this.man, newman, newbox);
                 this.man.left = newman.left;
                 this.man.top = newman.top;
+                this.moves.push(direction);
+                this.viewMoves();
+                var _this = this;
+                setTimeout(function() { _this.isSolved() }, 500);
             }
         }
     }
@@ -230,6 +536,8 @@ Sokoban.prototype.listen = function() {
 
         if (e.keyCode in directions) {
             _this.doStep(directions[e.keyCode]);
+        } else if (e.keyCode == 8) {
+            _this.checkReturn();
         }
     })
 }
@@ -237,22 +545,43 @@ Sokoban.prototype.listen = function() {
 new Sokoban({
     element: document.getElementById('sokoban'),
     cellSize: 30,
-    level: {
-        Id: 2,
-        Width: 7,
-        Height: 11,
-        L: [
-            "#######",
-            "#     #",
-            "#$$ $ #",
-            "# $ #.#",
-            "# #.#.#",
-            "#.#+#.#",
-            "#.#.# #",
-            "# # $ #",
-            "# $$$ #",
-            "#     #",
-            "#######"
-        ]
-    }
+    levelId: 0,
+    level: [{
+            Id: "#1",
+            Width: 19,
+            Height: 11,
+            L: [
+                "    #####",
+                "    #   #",
+                "    #   #",
+                "  ###   ##",
+                "  #      #",
+                "### # ## #   ######",
+                "#   # ## #####    #",
+                "# $  $           .#",
+                "#####$### #@##  ..#",
+                "    #     #########",
+                "    #######"
+            ]
+
+        },
+        {
+            Id: 2,
+            Width: 7,
+            Height: 11,
+            L: [
+                "#######",
+                "#     #",
+                "#$$ $ #",
+                "# $ #.#",
+                "# #.#.#",
+                "#.#+#.#",
+                "#.#.# #",
+                "# # $ #",
+                "# $$$ #",
+                "#     #",
+                "#######"
+            ]
+        }
+    ]
 });
