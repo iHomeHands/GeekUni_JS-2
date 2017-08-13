@@ -46,9 +46,9 @@ Sokoban.MOVE_RIGHT = 3;
 
 Sokoban.stateChar = {};
 Sokoban.stateClass = {};
-// Sokoban.descDirection = {};
 Sokoban.descDirection = [];
 Sokoban.action = [];
+Sokoban.reverseAction = [];
 
 Sokoban.descDirection[Sokoban.MOVE_TOP] = {
     'dx': -1,
@@ -149,6 +149,27 @@ Sokoban.action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_EMPTY] = {
     'before': '',
     'changeOld': Sokoban.ITEM_TARGET,
     'changeNew': Sokoban.ITEM_BOX
+};
+
+Sokoban.reverseAction[Sokoban.ITEM_MAN] = [];
+Sokoban.reverseAction[Sokoban.ITEM_MAN_TARGET] = [];
+
+Sokoban.reverseAction[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
+    'before': '',
+    'changeOld': Sokoban.ITEM_EMPTY,
+    'changeNew': Sokoban.ITEM_MAN
+};
+
+Sokoban.reverseAction[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
+    'before': '',
+    'changeOld': Sokoban.ITEM_TARGET,
+    'changeNew': Sokoban.ITEM_MAN
+};
+
+Sokoban.reverseAction[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
+    'before': '',
+    'changeOld': Sokoban.ITEM_TARGET,
+    'changeNew': Sokoban.ITEM_MAN_TARGET
 };
 
 
@@ -267,11 +288,45 @@ Sokoban.prototype.checkReturn = function() {
         console.log('empty return');
     } else {
         var direction = this.moves.pop();
-        this.doReturn(direction);
+        this.moves.push(direction);
+        this.doReturn(Sokoban.descDirection[direction]['reverse']);
     }
 }
 
 Sokoban.prototype.doReturn = function(direction) {
+    var newman = JSON.parse(JSON.stringify(this.man));
+    newman.left += Sokoban.descDirection[direction].dy;
+    newman.top += Sokoban.descDirection[direction].dx;
+
+    var newbox = JSON.parse(JSON.stringify(this.man));
+    newbox.left += Sokoban.descDirection[direction].dy * 2;
+    newbox.top += Sokoban.descDirection[direction].dx * 2;
+
+    var oldManState = this.field[this.man.top][this.man.left];
+
+    var newManState = this.field[newman.top][newman.left];
+
+    var newBoxState = this.field[newbox.top][newbox.left];
+
+    if (Sokoban.reverseAction[oldManState] != undefined) {
+        var doAction = Sokoban.reverseAction[oldManState][newManState];
+        if (doAction != undefined) {
+                this.field[this.man.top][this.man.left] = doAction['changeOld'];
+                this.field[newman.top][newman.left] = doAction['changeNew'];
+                this.updateClass(this.man.top, this.man.left);
+                this.updateClass(newman.top, newman.left);
+                //console.log(this.man, newman, newbox);
+                this.man.left = newman.left;
+                this.man.top = newman.top;
+                this.moves.pop();
+                this.moves.pop;
+                this.viewMoves();
+                var _this = this;
+                setTimeout(function() { _this.isSolved() }, 500);
+
+        }
+    }
+    console.log(this.man, newman, newbox);
     console.log('Return ' + Sokoban.descDirection[direction]['short']);
 }
 
@@ -319,9 +374,9 @@ Sokoban.prototype.doStep = function(direction) {
                 //console.log(this.man, newman, newbox);
                 this.man.left = newman.left;
                 this.man.top = newman.top;
-                var _this = this;
                 this.moves.push(direction);
                 this.viewMoves();
+                var _this = this;
                 setTimeout(function() { _this.isSolved() }, 500);
             }
         }
