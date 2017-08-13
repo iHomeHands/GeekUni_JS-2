@@ -54,32 +54,32 @@ Sokoban.descDirection[Sokoban.MOVE_TOP] = {
     'dx': -1,
     'dy': 0,
     'short': 'U',
-    'shortReverse' : 'D',
-    'reverse' : Sokoban.MOVE_BOTTOM
+    'shortReverse': 'D',
+    'reverse': Sokoban.MOVE_BOTTOM
 };
 
 Sokoban.descDirection[Sokoban.MOVE_BOTTOM] = {
     'dx': 1,
     'dy': 0,
     'short': 'D',
-    'shortReverse' : 'U',
-    'reverse' : Sokoban.MOVE_TOP
+    'shortReverse': 'U',
+    'reverse': Sokoban.MOVE_TOP
 };
 
 Sokoban.descDirection[Sokoban.MOVE_LEFT] = {
     'dx': 0,
     'dy': -1,
     'short': 'L',
-    'shortReverse' : 'R',
-    'reverse' : Sokoban.MOVE_RIGHT
+    'shortReverse': 'R',
+    'reverse': Sokoban.MOVE_RIGHT
 };
 
 Sokoban.descDirection[Sokoban.MOVE_RIGHT] = {
     'dx': 0,
     'dy': 1,
     'short': 'R',
-    'shortReverse' : 'L',
-    'reverse' : Sokoban.MOVE_LEFT
+    'shortReverse': 'L',
+    'reverse': Sokoban.MOVE_LEFT
 };
 
 Sokoban.action[Sokoban.ITEM_MAN] = [];
@@ -155,19 +155,23 @@ Sokoban.reverseAction[Sokoban.ITEM_MAN] = [];
 Sokoban.reverseAction[Sokoban.ITEM_MAN_TARGET] = [];
 
 Sokoban.reverseAction[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
-    'before': '',
     'changeOld': Sokoban.ITEM_EMPTY,
-    'changeNew': Sokoban.ITEM_MAN
+    'changeNew': Sokoban.ITEM_MAN,
+    'before': [
+        Sokoban.ITEM_BOX = {
+            'changeNew': Sokoban.ITEM_MAN,
+            'changeOld': Sokoban.ITEM_BOX,
+            'changeBefore': Sokoban.ITEM_EMPTY,
+        }
+    ]
 };
 
 Sokoban.reverseAction[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
-    'before': '',
     'changeOld': Sokoban.ITEM_TARGET,
     'changeNew': Sokoban.ITEM_MAN
 };
 
 Sokoban.reverseAction[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
-    'before': '',
     'changeOld': Sokoban.ITEM_TARGET,
     'changeNew': Sokoban.ITEM_MAN_TARGET
 };
@@ -311,6 +315,30 @@ Sokoban.prototype.doReturn = function(direction) {
     if (Sokoban.reverseAction[oldManState] != undefined) {
         var doAction = Sokoban.reverseAction[oldManState][newManState];
         if (doAction != undefined) {
+            var done = false;
+            if (doAction['before'] != undefined) {
+                if (doAction['before'][newBoxState] != undefined) {
+                    this.field[this.man.top][this.man.left] =
+                        doAction['before'][newBoxState]['changeOld'];
+                    this.field[newman.top][newman.left] =
+                        doAction['before'][newBoxState]['changeNew'];
+                    this.field[newbox.top][newbox.left] =
+                        doAction['before'][newBoxState]['changeBefore'];
+                    this.updateClass(this.man.top, this.man.left);
+                    this.updateClass(newman.top, newman.left);
+                    this.updateClass(newbox.top, newbox.left);
+                    this.man.left = newman.left;
+                    this.man.top = newman.top;
+                    this.moves.pop();
+                    this.viewMoves();
+                    var _this = this;
+                    setTimeout(function() { _this.isSolved() }, 500);
+
+                    alert('test');
+                    done = true;
+                }
+            }
+            if (!done) {
                 this.field[this.man.top][this.man.left] = doAction['changeOld'];
                 this.field[newman.top][newman.left] = doAction['changeNew'];
                 this.updateClass(this.man.top, this.man.left);
@@ -319,10 +347,10 @@ Sokoban.prototype.doReturn = function(direction) {
                 this.man.left = newman.left;
                 this.man.top = newman.top;
                 this.moves.pop();
-                this.moves.pop;
                 this.viewMoves();
                 var _this = this;
                 setTimeout(function() { _this.isSolved() }, 500);
+            }
 
         }
     }
