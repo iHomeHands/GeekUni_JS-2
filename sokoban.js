@@ -52,15 +52,17 @@ Sokoban.MOVE_PUSH_RIGHT = 7;
 Sokoban.stateChar = {};
 Sokoban.stateClass = {};
 Sokoban.descDirection = [];
+
+Sokoban.simple = [];
+
 Sokoban.action = [];
 Sokoban.reverseAction = [];
-Sokoban.reverseSimple = [];
 
 Sokoban.descDirection[Sokoban.MOVE_TOP] = {
     'dx': -1,
     'dy': 0,
     'short': 'U',
-    'push': Sokoban.MOVE_PUSH_TOP,
+    'push': Sokoban.MOVE_PUSH_BOTTOM,
     'shortReverse': 'D',
     'reverse': Sokoban.MOVE_BOTTOM
 };
@@ -69,7 +71,7 @@ Sokoban.descDirection[Sokoban.MOVE_BOTTOM] = {
     'dx': 1,
     'dy': 0,
     'short': 'D',
-    'push': Sokoban.MOVE_PUSH_BOTTOM,
+    'push': Sokoban.MOVE_PUSH_TOP,
     'shortReverse': 'U',
     'reverse': Sokoban.MOVE_TOP
 };
@@ -120,130 +122,102 @@ Sokoban.descDirection[Sokoban.MOVE_PUSH_RIGHT] = {
     'reverse': Sokoban.MOVE_LEFT
 };
 
-Sokoban.action[Sokoban.ITEM_MAN] = [];
-Sokoban.action[Sokoban.ITEM_MAN_TARGET] = [];
-Sokoban.action[Sokoban.ITEM_BOX] = [];
-Sokoban.action[Sokoban.ITEM_SOLVED] = [];
+Sokoban.assignSimple = function(action, a1, b1, a2, b2) {
+    if (action == undefined)
+        action = [];
+    if (action[a1] == undefined)
+        action[a1] = [];
+    action[a1][b1] = {
+        'changeOld': a2,
+        'changeNew': b2
+    }
+}
 
-Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
-    'changeOld': Sokoban.ITEM_EMPTY,
-    'changeNew': Sokoban.ITEM_MAN
-};
+Sokoban.assignWithPush = function(action, reverseAction, a1, b1, c1, a2, b2, c2) {
+    if (action == undefined)
+        action = [];
+    if (action[a1] == undefined)
+        action[a1] = [];
+    if (action[a1][b1] == undefined)
+        action[a1][b1] = [];
 
-Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_TARGET] = {
-    'changeOld': Sokoban.ITEM_EMPTY,
-    'changeNew': Sokoban.ITEM_MAN_TARGET
-};
+    action[a1][b1][c1] = {
+        'changeOld': a2,
+        'changeNew': b2,
+        'changeBefore': c2
+    }
+    if (reverseAction == undefined)
+        reverseAction = [];
+    if (reverseAction[a2] == undefined)
+        reverseAction[a2] = [];
+    if (reverseAction[a2][b2] == undefined)
+        reverseAction[a2][b2] = [];
 
-Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX] = {
-    'before': []
-};
+    reverseAction[a2][b2][c2] = {
+        'changeOld': a1,
+        'changeNew': b1,
+        'changeBefore': c1
+    }
+}
 
-Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX]['before'][Sokoban.ITEM_EMPTY] = {
-    'changeOld': Sokoban.ITEM_EMPTY,
-    'changeNew': Sokoban.ITEM_MAN,
-    'changeBefore': Sokoban.ITEM_BOX
-};
+//---------------------------------------------------------------
 
-Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_BOX]['before'][Sokoban.ITEM_TARGET] = {
-    'changeOld': Sokoban.ITEM_EMPTY,
-    'changeNew': Sokoban.ITEM_MAN,
-    'changeBefore': Sokoban.ITEM_SOLVED
-};
+//@_ _@
+Sokoban.assignSimple(Sokoban.simple,
+    Sokoban.ITEM_MAN, Sokoban.ITEM_EMPTY, Sokoban.ITEM_EMPTY, Sokoban.ITEM_MAN);
 
-Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_SOLVED] = {
-    'before': []
-};
+//@. _+
+Sokoban.assignSimple(Sokoban.simple,
+    Sokoban.ITEM_MAN, Sokoban.ITEM_TARGET, Sokoban.ITEM_EMPTY, Sokoban.ITEM_MAN_TARGET);
 
-Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_SOLVED]['before'][Sokoban.ITEM_TARGET] = {
-    'changeOld': Sokoban.ITEM_EMPTY,
-    'changeNew': Sokoban.ITEM_MAN_TARGET,
-    'changeBefore': Sokoban.ITEM_SOLVED
-};
+//+_ .@
+Sokoban.assignSimple(Sokoban.simple,
+    Sokoban.ITEM_MAN_TARGET, Sokoban.ITEM_EMPTY, Sokoban.ITEM_TARGET, Sokoban.ITEM_MAN);
+//+@ @+
+Sokoban.assignSimple(Sokoban.simple,
+    Sokoban.ITEM_MAN_TARGET, Sokoban.ITEM_TARGET, Sokoban.ITEM_TARGET, Sokoban.ITEM_MAN_TARGET);
 
+//---------------------------------------------------------------
 
-// Sokoban.action[Sokoban.ITEM_MAN][Sokoban.ITEM_SOLVED] = {
-//     'before': '1',
-// };
+//@$_ _@$
 
-Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
-    'changeOld': Sokoban.ITEM_TARGET,
-    'changeNew': Sokoban.ITEM_MAN
-};
+Sokoban.assignWithPush(Sokoban.action, Sokoban.reverseAction,
+    Sokoban.ITEM_MAN, Sokoban.ITEM_BOX, Sokoban.ITEM_EMPTY,
+    Sokoban.ITEM_EMPTY, Sokoban.ITEM_MAN, Sokoban.ITEM_BOX);
 
-// Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_BOX] = {
-//     'before': '1',
-// };
+//@$. _+*
+Sokoban.assignWithPush(Sokoban.action, Sokoban.reverseAction,
+    Sokoban.ITEM_MAN, Sokoban.ITEM_BOX, Sokoban.ITEM_TARGET,
+    Sokoban.ITEM_EMPTY, Sokoban.ITEM_MAN, Sokoban.ITEM_SOLVED);
 
-// Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_SOLVED] = {
-//     'before': [],
-//     'changeOld': Sokoban.Sokoban.ITEITEM_TARGET,
-//     'changeNew': Sokoban.ITEM_MAN_TARGET
-// };
+//@*. _+*
+Sokoban.assignWithPush(Sokoban.action, Sokoban.reverseAction,
+    Sokoban.ITEM_MAN, Sokoban.ITEM_SOLVED, Sokoban.ITEM_TARGET,
+    Sokoban.ITEM_EMPTY, Sokoban.ITEM_MAN_TARGET, Sokoban.ITEM_SOLVED);
 
-Sokoban.action[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
-    'changeOld': Sokoban.ITEM_TARGET,
-    'changeNew': Sokoban.ITEM_MAN_TARGET
-};
+//@*_ _+$
+Sokoban.assignWithPush(Sokoban.action, Sokoban.reverseAction,
+    Sokoban.ITEM_MAN, Sokoban.ITEM_SOLVED, Sokoban.ITEM_EMPTY,
+    Sokoban.ITEM_EMPTY, Sokoban.ITEM_MAN_TARGET, Sokoban.ITEM_BOX);
+//+$_ .@$
+Sokoban.assignWithPush(Sokoban.action, Sokoban.reverseAction,
+    Sokoban.ITEM_MAN_TARGET, Sokoban.ITEM_BOX, Sokoban.ITEM_EMPTY,
+    Sokoban.ITEM_TARGET, Sokoban.ITEM_MAN, Sokoban.ITEM_BOX);
+//+*. .+*
+Sokoban.assignWithPush(Sokoban.action, Sokoban.reverseAction,
+    Sokoban.ITEM_MAN_TARGET, Sokoban.ITEM_SOLVED, Sokoban.ITEM_TARGET,
+    Sokoban.ITEM_TARGET, Sokoban.ITEM_MAN_TARGET, Sokoban.ITEM_SOLVED);
+//+$. .@*
+Sokoban.assignWithPush(Sokoban.action, Sokoban.reverseAction,
+    Sokoban.ITEM_MAN_TARGET, Sokoban.ITEM_BOX, Sokoban.ITEM_TARGET,
+    Sokoban.ITEM_TARGET, Sokoban.ITEM_MAN, Sokoban.ITEM_SOLVED);
 
-// Sokoban.action[Sokoban.ITEM_BOX][Sokoban.ITEM_EMPTY] = {
-//     'before': [],
-//     'changeOld': Sokoban.ITEM_EMPTY,
-//     'changeNew': Sokoban.ITEM_BOX
-// };
+//+*_ .+$
+Sokoban.assignWithPush(Sokoban.action, Sokoban.reverseAction,
+    Sokoban.ITEM_MAN_TARGET, Sokoban.ITEM_SOLVED, Sokoban.ITEM_EMPTY,
+    Sokoban.ITEM_TARGET, Sokoban.ITEM_MAN_TARGET, Sokoban.ITEM_BOX);
 
-// Sokoban.action[Sokoban.ITEM_BOX][Sokoban.ITEM_TARGET] = {
-//     'before': [],
-//     'changeOld': Sokoban.ITEM_EMPTY,
-//     'changeNew': Sokoban.ITEM_SOLVED
-// };
-
-// Sokoban.action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_TARGET] = {
-//     'before': '',
-//     'changeOld': Sokoban.ITEM_TARGET,
-//     'changeNew': Sokoban.ITEM_SOLVED
-// };
-
-// Sokoban.action[Sokoban.ITEM_SOLVED][Sokoban.ITEM_EMPTY] = {
-//     'before': '',
-//     'changeOld': Sokoban.ITEM_TARGET,
-//     'changeNew': Sokoban.ITEM_BOX
-// };
-
-Sokoban.reverseAction[Sokoban.ITEM_MAN] = [];
-Sokoban.reverseAction[Sokoban.ITEM_MAN_TARGET] = [];
-
-Sokoban.reverseAction[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
-    'changeOld': Sokoban.ITEM_EMPTY,
-    'changeNew': Sokoban.ITEM_MAN,
-    'before': []
-};
-
-Sokoban.reverseAction[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY]['before'][Sokoban.ITEM_BOX] = {
-    'changeNew': Sokoban.ITEM_MAN,
-    'changeOld': Sokoban.ITEM_BOX,
-    'changeBefore': Sokoban.ITEM_EMPTY
-};
-
-Sokoban.reverseSimple[Sokoban.ITEM_MAN] = [];
-
-Sokoban.reverseSimple[Sokoban.ITEM_MAN][Sokoban.ITEM_EMPTY] = {
-    'changeOld': Sokoban.ITEM_EMPTY,
-    'changeNew': Sokoban.ITEM_MAN
-};
-
-Sokoban.reverseSimple[Sokoban.ITEM_MAN_TARGET] = [];
-
-Sokoban.reverseSimple[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_EMPTY] = {
-    'changeOld': Sokoban.ITEM_TARGET,
-    'changeNew': Sokoban.ITEM_MAN
-};
-
-Sokoban.reverseSimple[Sokoban.ITEM_MAN_TARGET][Sokoban.ITEM_TARGET] = {
-    'changeOld': Sokoban.ITEM_TARGET,
-    'changeNew': Sokoban.ITEM_MAN_TARGET
-};
-
+//---------------------------------------------------------------
 
 Sokoban.assignData(Sokoban.ITEM_WALL, '#', 'sokoban__item-wall');
 Sokoban.assignData(Sokoban.ITEM_MAN, '@', 'sokoban__item-man');
@@ -252,6 +226,8 @@ Sokoban.assignData(Sokoban.ITEM_BOX, '$', 'sokoban__item-box');
 Sokoban.assignData(Sokoban.ITEM_SOLVED, '*', 'sokoban__item-solved');
 Sokoban.assignData(Sokoban.ITEM_EMPTY, ' ', 'sokoban__item-empty');
 Sokoban.assignData(Sokoban.ITEM_MAN_TARGET, '+', 'sokoban__item-man-target');
+
+//---------------------------------------------------------------
 
 Sokoban.prototype.loadField = function() {
     this.element.style.width = (this.options.level[this.options.levelId].Width * this.options.cellSize) + 'px';
@@ -384,7 +360,7 @@ Sokoban.prototype.checkReturn = function() {
 }
 
 Sokoban.prototype.doReturnSimple = function(direction) {
-    //console.log(direction);
+    //console.log('Simple ' + direction);
     var newman = JSON.parse(JSON.stringify(this.man));
     newman.left += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dy;
     newman.top += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dx;
@@ -392,8 +368,8 @@ Sokoban.prototype.doReturnSimple = function(direction) {
     var oldManState = this.field[this.man.top][this.man.left];
 
     var newManState = this.field[newman.top][newman.left];
-    if (Sokoban.reverseSimple[oldManState] != undefined) {
-        var doAction = Sokoban.reverseSimple[oldManState][newManState];
+    if (Sokoban.simple[oldManState] != undefined) {
+        var doAction = Sokoban.simple[oldManState][newManState];
         if (doAction != undefined) {
             this.field[this.man.top][this.man.left] = doAction['changeOld'];
             this.field[newman.top][newman.left] = doAction['changeNew'];
@@ -410,7 +386,7 @@ Sokoban.prototype.doReturnSimple = function(direction) {
 }
 
 Sokoban.prototype.doReturnPush = function(direction) {
-    console.log(direction);
+    //console.log('Push ' + direction);
     var newman = JSON.parse(JSON.stringify(this.man));
     newman.left += Sokoban.descDirection[direction].dy;
     newman.top += Sokoban.descDirection[direction].dx;
@@ -419,54 +395,37 @@ Sokoban.prototype.doReturnPush = function(direction) {
     newbox.left += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dy;
     newbox.top += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dx;
 
-    var oldManState = this.field[this.man.top][this.man.left];
+    var newManState = this.field[this.man.top][this.man.left];
 
-    var newManState = this.field[newman.top][newman.left];
+    var oldManState = this.field[newman.top][newman.left];
 
     var newBoxState = this.field[newbox.top][newbox.left];
     //console.log(this.man, newman, newbox);
     //console.log(oldManState, newManState, newBoxState);
+    //console.log(Sokoban.reverseAction);
     if (Sokoban.reverseAction[oldManState] != undefined) {
         var doAction = Sokoban.reverseAction[oldManState][newManState];
         if (doAction != undefined) {
-            var done = false;
-            if (doAction['before'] != undefined) {
-                if (doAction['before'][newBoxState] != undefined) {
-                    this.field[this.man.top][this.man.left] =
-                        doAction['before'][newBoxState]['changeOld'];
-                    this.field[newman.top][newman.left] =
-                        doAction['before'][newBoxState]['changeNew'];
-                    this.field[newbox.top][newbox.left] =
-                        doAction['before'][newBoxState]['changeBefore'];
-                    this.updateClass(this.man.top, this.man.left);
-                    this.updateClass(newman.top, newman.left);
-                    this.updateClass(newbox.top, newbox.left);
-                    this.man.left = newman.left;
-                    this.man.top = newman.top;
-                    this.moves.pop();
-                    this.viewMoves();
-                    var _this = this;
-                    setTimeout(function() { _this.isSolved() }, 500);
-                    done = true;
-                }
-            }
-            if (!done) {
-                this.field[this.man.top][this.man.left] = doAction['changeOld'];
-                this.field[newman.top][newman.left] = doAction['changeNew'];
+            if (doAction[newBoxState] != undefined) {
+                this.field[this.man.top][this.man.left] =
+                    doAction[newBoxState]['changeNew'];
+                this.field[newman.top][newman.left] =
+                    doAction[newBoxState]['changeOld'];
+                this.field[newbox.top][newbox.left] =
+                    doAction[newBoxState]['changeBefore'];
                 this.updateClass(this.man.top, this.man.left);
                 this.updateClass(newman.top, newman.left);
+                this.updateClass(newbox.top, newbox.left);
                 this.man.left = newman.left;
                 this.man.top = newman.top;
                 this.moves.pop();
                 this.viewMoves();
                 var _this = this;
-                setTimeout(function() { _this.isSolved() }, 500);
+                setTimeout(function() { _this.isSolved() }, 500); //                 done = true;
             }
-
         }
     }
-    //console.log(this.man, newman, newbox);
-    //console.log('Return ' + Sokoban.descDirection[direction]['short']);
+
 }
 
 Sokoban.prototype.doStep = function(direction) {
@@ -475,28 +434,25 @@ Sokoban.prototype.doStep = function(direction) {
     newman.left += Sokoban.descDirection[direction].dy;
     newman.top += Sokoban.descDirection[direction].dx;
 
-    var newbox = JSON.parse(JSON.stringify(this.man));
-    newbox.left += Sokoban.descDirection[direction].dy * 2;
-    newbox.top += Sokoban.descDirection[direction].dx * 2;
-
     var oldManState = this.field[this.man.top][this.man.left];
 
     var newManState = this.field[newman.top][newman.left];
 
-    var newBoxState = this.field[newbox.top][newbox.left];
-
-    if (Sokoban.action[oldManState] != undefined) {
-        var doAction = Sokoban.action[oldManState][newManState];
-        if (doAction != undefined) {
-            var done = false;
-            if (doAction['before'] != undefined) {
-                if (doAction['before'][newBoxState] != undefined) {
+    if ((newManState == Sokoban.ITEM_BOX) || (newManState == Sokoban.ITEM_SOLVED)) {
+        var newbox = JSON.parse(JSON.stringify(this.man));
+        newbox.left += Sokoban.descDirection[direction].dy * 2;
+        newbox.top += Sokoban.descDirection[direction].dx * 2;
+        var newBoxState = this.field[newbox.top][newbox.left];
+        if (Sokoban.action[oldManState] != undefined) {
+            var doAction = Sokoban.action[oldManState][newManState];
+            if (doAction != undefined) {
+                if (doAction[newBoxState] != undefined) {
                     this.field[this.man.top][this.man.left] =
-                        doAction['before'][newBoxState]['changeOld'];
+                        doAction[newBoxState]['changeOld'];
                     this.field[newman.top][newman.left] =
-                        doAction['before'][newBoxState]['changeNew'];
+                        doAction[newBoxState]['changeNew'];
                     this.field[newbox.top][newbox.left] =
-                        doAction['before'][newBoxState]['changeBefore'];
+                        doAction[newBoxState]['changeBefore'];
                     this.updateClass(this.man.top, this.man.left);
                     this.updateClass(newman.top, newman.left);
                     this.updateClass(newbox.top, newbox.left);
@@ -505,10 +461,14 @@ Sokoban.prototype.doStep = function(direction) {
                     this.moves.push(Sokoban.descDirection[direction]['push']);
                     this.viewMoves();
                     var _this = this;
-                    setTimeout(function() { _this.isSolved() }, 500);
-                    done = true;
+                    setTimeout(function() { _this.isSolved() }, 500); //                 done = true;
                 }
-            } else {
+            }
+        }
+    } else {
+        if (Sokoban.simple[oldManState] != undefined) {
+            var doAction = Sokoban.simple[oldManState][newManState];
+            if (doAction != undefined) {
                 this.field[this.man.top][this.man.left] = doAction['changeOld'];
                 this.field[newman.top][newman.left] = doAction['changeNew'];
                 this.updateClass(this.man.top, this.man.left);
@@ -545,25 +505,26 @@ Sokoban.prototype.listen = function() {
 new Sokoban({
     element: document.getElementById('sokoban'),
     cellSize: 30,
-    levelId: 0,
+    levelId: 2,
     level: [{
-            Id: "#1",
-            Width: 19,
-            Height: 11,
+            Id: 1,
+            Width: 8,
+            Height: 13,
             L: [
-                "    #####",
-                "    #   #",
-                "    #   #",
-                "  ###   ##",
-                "  #      #",
-                "### # ## #   ######",
-                "#   # ## #####    #",
-                "# $  $           .#",
-                "#####$### #@##  ..#",
-                "    #     #########",
-                "    #######"
+                " ######",
+                "##    #",
+                "#  ## ##",
+                "# #..  #",
+                "#   . @#",
+                "# $## ##",
+                "## #  #",
+                "## $ ##",
+                "#  $##",
+                "#   #",
+                "#   #",
+                "#  ##",
+                "####"
             ]
-
         },
         {
             Id: 2,
@@ -581,6 +542,925 @@ new Sokoban({
                 "# $$$ #",
                 "#     #",
                 "#######"
+            ]
+        },
+        {
+            Id: 3,
+            Width: 7,
+            Height: 12,
+            L: [
+                " #####",
+                "##   ##",
+                "#    @#",
+                "#$#####",
+                "#  ...#",
+                "# $ $ #",
+                "#...$ #",
+                "#### ##",
+                "#     #",
+                "# $$  #",
+                "##   ##",
+                " #####"
+            ]
+        },
+        {
+            Id: 4,
+            Width: 9,
+            Height: 14,
+            L: [
+                " ########",
+                " #      #",
+                " # # #  #",
+                "## # #$ #",
+                "#  $  $ #",
+                "#  $  # #",
+                "## #$ # #",
+                " # #  $ #",
+                " # ##$# #",
+                " #  #   #",
+                "##  #####",
+                "#    ####",
+                "#......+#",
+                "#########"
+            ]
+        },
+        {
+            Id: 5,
+            Width: 8,
+            Height: 13,
+            L: [
+                "#######",
+                "#  #  ##",
+                "#   @  #",
+                "#.  #  #",
+                "#. .# ##",
+                "#.  # #",
+                "#.. # #",
+                "##### #",
+                "#  $  #",
+                "# $ $ #",
+                "# $$$ #",
+                "#     #",
+                "#######"
+            ]
+        },
+        {
+            Id: 6,
+            Width: 9,
+            Height: 9,
+            L: [
+                "  #####",
+                "###   ##",
+                "#   $  ##",
+                "# $#*   #",
+                "#   *  @#",
+                "#  #*  ##",
+                "####. ##",
+                "   #.##",
+                "   ###"
+            ]
+        },
+        {
+            Id: 7,
+            Width: 6,
+            Height: 10,
+            L: [
+                " ####",
+                "##  #",
+                "# @ #",
+                "# $ #",
+                "# * #",
+                "# * ##",
+                "##.  #",
+                " # # #",
+                " #   #",
+                " #####"
+            ]
+        },
+        {
+            Id: 8,
+            Width: 12,
+            Height: 11,
+            L: [
+                "       ####",
+                "########  ##",
+                "# $   $    #",
+                "#   $ $ $  #",
+                "# $###### ##",
+                "#.........+#",
+                "######### ##",
+                "#          #",
+                "#  $ $ $ $ #",
+                "#  #########",
+                "####"
+            ]
+        },
+        {
+            Id: 9,
+            Width: 6,
+            Height: 10,
+            L: [
+                "  ####",
+                "###  #",
+                "# .$ #",
+                "# .* #",
+                "##*# #",
+                " #   #",
+                " # $ #",
+                " # # #",
+                " # @ #",
+                " #####"
+            ]
+        },
+        {
+            Id: 10,
+            Width: 9,
+            Height: 13,
+            L: [
+                "########",
+                "#      #",
+                "#  $ $ #",
+                "# $$ # #",
+                "# $  # #",
+                "#  ### #",
+                "####.# #",
+                " #  .# #",
+                " # $.# ##",
+                " # . #  #",
+                " # . @  #",
+                " # .##  #",
+                " ########"
+            ]
+        },
+        {
+            Id: 11,
+            Width: 7,
+            Height: 11,
+            L: [
+                "######",
+                "#    #",
+                "# ## #",
+                "#  $ #",
+                "#  . #",
+                "## * ##",
+                " # *  #",
+                " # *@ #",
+                " # ## #",
+                " #    #",
+                " ######"
+            ]
+        },
+        {
+            Id: 12,
+            Width: 7,
+            Height: 9,
+            L: [
+                "#######",
+                "#  .  #",
+                "# $+$ #",
+                "#  * ##",
+                "## * ##",
+                "## *  #",
+                "# $.$ #",
+                "#  .  #",
+                "#######"
+            ]
+        },
+        {
+            Id: 13,
+            Width: 9,
+            Height: 8,
+            L: [
+                " ####",
+                "##  #####",
+                "#  $$   #",
+                "#@$  . ##",
+                "####.#.##",
+                " # $ .  #",
+                " #     ##",
+                " #######"
+            ]
+        },
+        {
+            Id: 14,
+            Width: 6,
+            Height: 7,
+            L: [
+                "####",
+                "# @##",
+                "# .*##",
+                "# *  #",
+                "# $  #",
+                "##  ##",
+                " ####"
+            ]
+        },
+        {
+            Id: 15,
+            Width: 7,
+            Height: 14,
+            L: [
+                " ####",
+                " #  #",
+                " # $#",
+                " #  #",
+                "## $#",
+                "#   #",
+                "# # ##",
+                "#  $.##",
+                "## *. #",
+                " # #. #",
+                " # ## #",
+                " # ## #",
+                " # @  #",
+                " ######"
+            ]
+        },
+        {
+            Id: 16,
+            Width: 17,
+            Height: 13,
+            L: [
+                "  ####",
+                "###  ######",
+                "#..       ##",
+                "#...# ##   #####",
+                "#..## ##  $ ## #",
+                "#. ## ## $ $ # ##",
+                "#. ##$##  $  $ @#",
+                "## ## ## $ $ # ##",
+                " # ## ##  $ ## #",
+                " # ## #    #####",
+                " #        ##",
+                " #  #### ##",
+                " ####  ###"
+            ]
+        },
+        {
+            Id: 17,
+            Width: 16,
+            Height: 14,
+            L: [
+                "################",
+                "#              #",
+                "#  ###@   ###  #",
+                "# ## ## .## ## #",
+                "# #   #.*#   # #",
+                "# #####*.##### #",
+                "#  $  $.*$  $  #",
+                "# $ $  ..  $ $ #",
+                "# #####..##### #",
+                "# #   #*.#   # #",
+                "# ## ## *## ## #",
+                "#  ### $  ###  #",
+                "#              #",
+                "################"
+            ]
+        },
+        {
+            Id: 18,
+            Width: 11,
+            Height: 11,
+            L: [
+                "      ####",
+                " ######  #",
+                " #     $ #",
+                "## # # # #",
+                "#  $ $ # #",
+                "# $  $ # #",
+                "#   #### ##",
+                "#######.  #",
+                "  #   ..  #",
+                "  #@  .. ##",
+                "  ########"
+            ]
+        },
+        {
+            Id: 19,
+            Width: 12,
+            Height: 8,
+            L: [
+                " #####",
+                "##   ##",
+                "#  $  #####",
+                "#   $   $ ##",
+                "## $ $ $   #",
+                "#  ####### #",
+                "#  ...@... #",
+                "############"
+            ]
+        },
+        {
+            Id: 20,
+            Width: 9,
+            Height: 13,
+            L: [
+                "########",
+                "#  .#  #",
+                "#  .#$ #",
+                "#@ .#  #",
+                "## .#  #",
+                " # ##$ ##",
+                " #      #",
+                " # ##   #",
+                " #  ##$ #",
+                " ##$#   #",
+                " #      #",
+                " #     ##",
+                " #######"
+            ]
+        },
+        {
+            Id: 21,
+            Width: 10,
+            Height: 12,
+            L: [
+                "   ####",
+                "####  ###",
+                "#    $  #",
+                "#   $#$ #",
+                "##   $  #",
+                " ##  ## #",
+                "  ##### #",
+                "  ##### ##",
+                "  #.. #  #",
+                "  #+     #",
+                "  ##  .###",
+                "   #####"
+            ]
+        },
+        {
+            Id: 22,
+            Width: 10,
+            Height: 14,
+            L: [
+                "  #######",
+                " ##     ##",
+                " # $ ##  #",
+                " # #  ## #",
+                " #  $ ## #",
+                "##  #    #",
+                "#   $   ##",
+                "#  ###$###",
+                "#   ##   #",
+                "##  ## # #",
+                " ####  . #",
+                "    #@ ..#",
+                "    ## #.#",
+                "     #####"
+            ]
+        },
+        {
+            Id: 23,
+            Width: 10,
+            Height: 13,
+            L: [
+                "#########",
+                "#    #  #",
+                "# $   $ #",
+                "#  $$## #",
+                "##   ## #",
+                " ###### #",
+                "      # #",
+                "     ## ##",
+                "   ###.  #",
+                "   #...  #",
+                "   # # ###",
+                "   #   @#",
+                "   ######"
+            ]
+        },
+        {
+            Id: 24,
+            Width: 6,
+            Height: 9,
+            L: [
+                "  ####",
+                "###  #",
+                "# .$ #",
+                "# $  #",
+                "#** @#",
+                "# * ##",
+                "# #.#",
+                "#   #",
+                "#####"
+            ]
+        },
+        {
+            Id: 25,
+            Width: 7,
+            Height: 11,
+            L: [
+                " ######",
+                "##  . #",
+                "#  .#.#",
+                "#@  . #",
+                "## ## #",
+                " # $  #",
+                " # $  #",
+                " # #$ #",
+                " # $ ##",
+                " #    #",
+                " ######"
+            ]
+        },
+        {
+            Id: 26,
+            Width: 18,
+            Height: 16,
+            L: [
+                "     ####",
+                "  ####  #########",
+                " ##             ##",
+                " #      #####    #",
+                " #   ####   ##   #",
+                "##   ########## ##",
+                "#  ####      ## #",
+                "#    ##    # ## #",
+                "#    ## # $  ## #",
+                "##   #### ##$## #",
+                " ### ## $ ## ## #",
+                " ### #  #$## ## #",
+                " #..      #   $ #",
+                " #..   #  #  $# #",
+                " #+.  ######    #",
+                " ######    ######"
+            ]
+        },
+        {
+            Id: 27,
+            Width: 14,
+            Height: 15,
+            L: [
+                "   ###########",
+                "  ##    #    #",
+                " ##  $  # ## #",
+                "##   #       #",
+                "#    # ## ####",
+                "#  # $ #   #",
+                "## #  ##@  #",
+                " # ####### #",
+                " # #   # # ##",
+                " # # $ # #  #",
+                " # $$# ###  #",
+                " #   $ ##.. #",
+                " #  ## #.. .#",
+                " #####  .  ##",
+                "     #######"
+            ]
+        },
+        {
+            Id: 28,
+            Width: 15,
+            Height: 13,
+            L: [
+                "########",
+                "#      # #####",
+                "# **.$ # #   ##",
+                "# .*.$ # # #@ #",
+                "# $$$$ ### ## #",
+                "# .*. #    ## #",
+                "# .*. #$ #.## #",
+                "# $$$$ $ .. # #",
+                "# *.* #$ #. # #",
+                "# *..  $ #. # #",
+                "#     #$####  #",
+                "#######      ##",
+                "      ########"
+            ]
+        },
+        {
+            Id: 29,
+            Width: 12,
+            Height: 15,
+            L: [
+                "  #####",
+                " ##   ####",
+                " #  #  $ ##",
+                " #   $ #  ##",
+                "## #$####  #",
+                "#  # #. ## #",
+                "#  # #.. # #",
+                "##   #.. @ #",
+                " # $###  # #",
+                "##  ## . # #",
+                "#  $#  # # #",
+                "#        # #",
+                "####$### # #",
+                "   #       #",
+                "   #########"
+            ]
+        },
+        {
+            Id: 30,
+            Width: 10,
+            Height: 13,
+            L: [
+                "   ####",
+                "  ##  ##",
+                " ## $  ##",
+                "##  .*  ##",
+                "#   *.*  #",
+                "# **+*.* #",
+                "#  .*.*  #",
+                "## $    ##",
+                " ##  $ ##",
+                "  #$$ $#",
+                "  #    #",
+                "  ##  ##",
+                "   ####"
+            ]
+        },
+        {
+            Id: 31,
+            Width: 12,
+            Height: 14,
+            L: [
+                "   ####",
+                " ###..#",
+                "##  ..#",
+                "#   .+#####",
+                "# $ ###   #",
+                "#  ##   $ #",
+                "## #  ### ##",
+                "##      $  #",
+                "# $$ # ### #",
+                "#  # # # # #",
+                "#  # # ### #",
+                "######  $  #",
+                "     #  #  #",
+                "     #######"
+            ]
+        },
+        {
+            Id: 32,
+            Width: 14,
+            Height: 16,
+            L: [
+                "    #########",
+                " ####   ##  #",
+                " #      $   #",
+                " #  $##$##  #",
+                " ##  #  .#$ #",
+                "  #$ # ..#  #",
+                "  #  $ #### ##",
+                "#### ###.    #",
+                "#   $ ##.    #",
+                "#  $  ### #$##",
+                "# $#  ##  . #",
+                "#  $ #..  . #",
+                "# $# #.  ## #",
+                "# $  #+.    #",
+                "###  ##. ####",
+                "  ########"
+            ]
+        },
+        {
+            Id: 33,
+            Width: 8,
+            Height: 13,
+            L: [
+                "  #####",
+                " ##   #",
+                "##  $ #",
+                "# $ # #",
+                "# # # #",
+                "# @ # #",
+                "##### #",
+                "   ## #",
+                "   #  ##",
+                "   # $ #",
+                " ### # #",
+                " #...  #",
+                " #######"
+            ]
+        },
+        {
+            Id: 34,
+            Width: 11,
+            Height: 15,
+            L: [
+                "    ####",
+                "   ##  ####",
+                "####      #",
+                "#..#   #  #",
+                "#.    ## ##",
+                "#.   ### #",
+                "######## #",
+                "  #    # #",
+                "###  $ # #",
+                "#  # #$# ##",
+                "#@        #",
+                "## #$##   #",
+                " # $ ######",
+                " #   #",
+                " #####"
+            ]
+        },
+        {
+            Id: 35,
+            Width: 6,
+            Height: 9,
+            L: [
+                "  ####",
+                " ##  #",
+                "##   #",
+                "# $* #",
+                "#  * #",
+                "# #* #",
+                "#  . #",
+                "## @ #",
+                " #####"
+            ]
+        },
+        {
+            Id: 36,
+            Width: 17,
+            Height: 13,
+            L: [
+                "#######    ####",
+                "#     ######  ##",
+                "# #$#  #       #",
+                "#  $       #   #",
+                "# ## ###  ###  #",
+                "# #  # #### ## #",
+                "#  $ #  ###  # #",
+                "# $#$####.#### #",
+                "#    ## ... ## ##",
+                "#######  .  @   #",
+                "      #  ## #   #",
+                "      #     #  ##",
+                "      ##########"
+            ]
+        },
+        {
+            Id: 37,
+            Width: 11,
+            Height: 16,
+            L: [
+                "      ####",
+                "  ##### .##",
+                "  #  . .. #",
+                "###   ..$ #",
+                "#  ###  # #",
+                "# $ ## ## #",
+                "#@  ## ## #",
+                "##$ ##$## #",
+                " # $#  ## #",
+                " #     ## #",
+                " ##$## ## #",
+                "  #    ## #",
+                "  #### ## #",
+                "     #  # #",
+                "     #    #",
+                "     ######"
+            ]
+        },
+        {
+            Id: 38,
+            Width: 7,
+            Height: 10,
+            L: [
+                " ####",
+                "##  ##",
+                "#  $ ##",
+                "# #*  #",
+                "#  *  #",
+                "#  *  #",
+                "# #* ##",
+                "#@ . #",
+                "###  #",
+                "  ####"
+            ]
+        },
+        {
+            Id: 39,
+            Width: 11,
+            Height: 13,
+            L: [
+                " #########",
+                "##   #   #",
+                "#  $ $ $ #",
+                "#  #   # #",
+                "## ## $# #",
+                "#  ###   #",
+                "#  ##### #",
+                "##@#   # ##",
+                " ### # #  #",
+                "   # .    #",
+                "   #.#.# ##",
+                "   # .   #",
+                "   #######"
+            ]
+        },
+        {
+            Id: 40,
+            Width: 6,
+            Height: 9,
+            L: [
+                " #####",
+                "##   #",
+                "#  $ #",
+                "#@$  #",
+                "### ##",
+                "#....#",
+                "# $$ #",
+                "##   #",
+                " #####"
+            ]
+        },
+        {
+            Id: 41,
+            Width: 13,
+            Height: 12,
+            L: [
+                "        ####",
+                " ########  #",
+                " #      #$ #",
+                " # $# $ #  #",
+                " # $  $  $ #",
+                " # #  ## # #",
+                " #@####### ##",
+                "####  ####  #",
+                "# .#     #  #",
+                "#...  #$    #",
+                "#. . .  #####",
+                "#########"
+            ]
+        },
+        {
+            Id: 42,
+            Width: 8,
+            Height: 12,
+            L: [
+                " ######",
+                "##    ##",
+                "#  $   #",
+                "# $$$#@#",
+                "# $  ###",
+                "## $ #.#",
+                "#### #.#",
+                "#     .#",
+                "# #   .#",
+                "# ##$#.#",
+                "#    ..#",
+                "########"
+            ]
+        },
+        {
+            Id: 43,
+            Width: 13,
+            Height: 16,
+            L: [
+                "  ####  ####",
+                "  #  ####  ##",
+                " ##         #",
+                " #  ### #   #",
+                " #      ## ##",
+                " ###### ## #",
+                " ####   ## #",
+                " #+.. #  # #",
+                " ###.    # #",
+                "   #.. ### #",
+                "########## #",
+                "#    ##    #",
+                "# $ $  $ $ #",
+                "#  $    $ ##",
+                "###  ##  ##",
+                "  ########"
+            ]
+        },
+        {
+            Id: 44,
+            Width: 7,
+            Height: 10,
+            L: [
+                "  #####",
+                " ## @ #",
+                " #  # #",
+                " #$## #",
+                " # #  #",
+                "## .$ #",
+                "#  ** #",
+                "#   *##",
+                "#  #.#",
+                "######"
+            ]
+        },
+        {
+            Id: 45,
+            Width: 8,
+            Height: 10,
+            L: [
+                "########",
+                "#    @ #",
+                "# $  # #",
+                "###$## #",
+                " # . $ #",
+                " # . # #",
+                " ##..$ #",
+                "  ##.$ #",
+                "   ### #",
+                "     ###"
+            ]
+        },
+        {
+            Id: 46,
+            Width: 10,
+            Height: 11,
+            L: [
+                "   ####",
+                "####  #",
+                "# $   ##",
+                "# #.   ##",
+                "# #. $  ##",
+                "# #. #$  #",
+                "# #+ #   #",
+                "# ## #  ##",
+                "#  # $ ##",
+                "##   ###",
+                " #####"
+            ]
+        },
+        {
+            Id: 47,
+            Width: 15,
+            Height: 12,
+            L: [
+                "  ########",
+                "  #      ##",
+                "###       ##",
+                "#    ###   ##",
+                "#      #  $ ##",
+                "## ###.# $ $ ##",
+                "#  #  .#  $  @#",
+                "#  .  .##$ $ ##",
+                "####...## $ ##",
+                "   ### #   ##",
+                "     #    ##",
+                "     ######"
+            ]
+        },
+        {
+            Id: 48,
+            Width: 11,
+            Height: 15,
+            L: [
+                "      ####",
+                "#######  #",
+                "# .##  $ #",
+                "# .##  # #",
+                "##.   $# #",
+                " #.$ $ # #",
+                " #.#  $# #",
+                "##.#$  # #",
+                "# .#  ## #",
+                "# .$ ### ##",
+                "###  ##   #",
+                "  ## #   @#",
+                "   # $   ##",
+                "   #    ##",
+                "   ######"
+            ]
+        },
+        {
+            Id: 49,
+            Width: 8,
+            Height: 11,
+            L: [
+                "########",
+                "#      #",
+                "# .*.###",
+                "# $$$  #",
+                "#  *.. #",
+                "# $$$  #",
+                "# ...###",
+                "#  $ $ #",
+                "### **.#",
+                "#@     #",
+                "########"
+            ]
+        },
+        {
+            Id: 50,
+            Width: 14,
+            Height: 15,
+            L: [
+                " #############",
+                " #           #",
+                " # ## ########",
+                " #$#   #     #",
+                " # $   $  #  #",
+                " # #   # ##@ #",
+                "## ##### ### #",
+                "#  ##..#$# # #",
+                "#        ### #",
+                "###.... .##  #",
+                "  #  ##$###  #",
+                "  # ###      #",
+                "  #  # $###$ #",
+                "  ##        ##",
+                "   ##########"
             ]
         }
     ]
