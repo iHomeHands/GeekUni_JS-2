@@ -3,12 +3,15 @@
 function Sokoban(options) {
     this.options = options;
     this.element = this.options.element;
+    this.elementdone = this.options.elementdone;	
     this.field = [];
     this.man = { 'top': 0, 'left': 0 };
     this.targets = [];
     this.mouse = { 'top': 0, 'left': 0 };
     this.moves = [];
     this.done = false;
+	this.element.innerHTML='';
+	this.element.style.display= "block";			
     this.init();
 }
 
@@ -315,7 +318,10 @@ Sokoban.prototype.isSolved = function() {
     if (count == 0) {
         if (this.done == false) {
             this.done = true;
-            alert('Solved ' + this.moves);
+			this.elementdone.innerHTML="<h1>Уровень завершен<h1><p>Количество ходов: "+this.moves.length+"</p><a href='javascript:loadLevel(levelId);'>Начать сначало</a><BR><a href='javascript:loadLevel(levelId+1);' >Следующий уровень</a>";
+			this.elementdone.style.display= "block";
+			this.element.style.display= "none";			
+            //alert('Solved ' + this.moves);
         }
     }
 }
@@ -502,8 +508,10 @@ Sokoban.prototype.listen = function() {
     })
 }
 
+/*
 new Sokoban({
     element: document.getElementById('sokoban'),
+	elementdone: document.getElementById('done'),
     cellSize: 30,
     levelId: 2,
     level: [{
@@ -1465,3 +1473,4 @@ new Sokoban({
         }
     ]
 });
+*/
