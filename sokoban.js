@@ -7,16 +7,12 @@ function Sokoban(options) {
     this.elementdone = this.options.elementdone;
     this.field = [];
     this.man = { 'top': 0, 'left': 0 };
-    this.targets = [];
     this.mouse = { 'top': 0, 'left': 0 };
+    this.targets = [];
     this.moves = [];
     this.automoves = [];
     this.done = false;
-    this.element.innerHTML = '';
-    this.element.style.display = "block";
     this.timeToSolved = 0;
-    this.timer;
-    this.timerAutoMove;
     this.init();
 }
 
@@ -192,6 +188,11 @@ Sokoban.stateItem = {
 
 //---------------------------------------------------------------
 
+// Генерируем контент по шаблону
+Sokoban.prototype.parseTemplate = function(tpl, data) {
+    return tpl.replace(/\{\{([^\}]+)\}\}/g, (str, key) => data[key] || '');
+}
+
 // Инициализация
 Sokoban.prototype.init = function() {
     this.loadField();
@@ -226,9 +227,7 @@ Sokoban.prototype.loadField = function() {
     if (!this.timerAutoMove) {
         this.timerAutoMove = setInterval(() => { this.onAutoMove(); }, 50);
     }
-
-    this.elementdone.innerHTML = 'Ходов: 0 Время: 0'; // style.display = "none";
-    this.element.style.display = "block";
+    this.updateTime();
 
     this.element.innerText = '';
     this.element.style.width = (this.options.level[this.options.levelId].Width * this.options.cellSize) + 'px';
@@ -270,16 +269,23 @@ Sokoban.prototype.loadField = function() {
         }
     }
 }
+// Обновление отображения времени решения
+Sokoban.prototype.updateTime = function() {
+    this.elementdone.innerHTML =
+        this.parseTemplate(document.getElementById('done__tml').textContent, {
+            'step': this.moves.length,
+            'time': this.timeToSolved
+        });
+}
 
-// Обновление времени решения
+// Пересчет времени решения
 Sokoban.prototype.onTime = function() {
     if (this.done) {
         return;
     }
     if (this.moves.length > 0) {
         this.timeToSolved++;
-        this.elementdone.innerHTML = 'Ходов : ' + this.moves.length +
-            ' Время: ' + this.timeToSolved;
+        this.updateTime();
     }
 }
 
@@ -288,7 +294,6 @@ Sokoban.prototype.onAutoMove = function() {
     if (this.automoves.length == 0) {
         return;
     }
-    // console.log(this.automoves);
     var dir = this.automoves.shift();
     this.doStep(dir);
 }
@@ -441,9 +446,11 @@ Sokoban.prototype.isSolved = function() {
     }
     if (this.done == false) {
         this.done = true;
-        this.elementdone.innerHTML = "<h1>Уровень завершен<h1><p>Количество ходов: " + this.moves.length +
-            "</p><p>Время на прохождение: " + this.timeToSolved +
-            " с </p><a href='javascript:loadLevel(levelId);'>Начать сначало</a><BR><a href='javascript:loadLevel(levelId+1);' >Следующий уровень</a>";
+        this.elementdone.innerHTML =
+            this.parseTemplate(document.getElementById('solved__tml').textContent, {
+                'step': this.moves.length,
+                'time': this.timeToSolved
+            });
         this.elementdone.style.display = "block";
         this.element.style.display = "none";
     }
@@ -493,7 +500,7 @@ Sokoban.prototype.doReturn = function() {
 // отмена хода без толкания ящика
 Sokoban.prototype.doReturnSimple = function(direction) {
     var newman = {};
-    Object.assign(newman,this.man);
+    Object.assign(newman, this.man);
     newman.left += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dy;
     newman.top += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dx;
 
@@ -507,7 +514,7 @@ Sokoban.prototype.doReturnSimple = function(direction) {
             this.field[newman.top][newman.left] = doAction['changeNew'];
             this.updateClass(this.man.top, this.man.left);
             this.updateClass(newman.top, newman.left);
-            Object.assign(this.man,newman);
+            Object.assign(this.man, newman);
             this.moves.pop();
             this.viewMoves();
             setTimeout(() => { this.isSolved() }, 500);
@@ -518,12 +525,12 @@ Sokoban.prototype.doReturnSimple = function(direction) {
 // отмена хода с толкания ящика
 Sokoban.prototype.doReturnPush = function(direction) {
     var newman = {};
-    Object.assign(newman,this.man);
+    Object.assign(newman, this.man);
     newman.left += Sokoban.descDirection[direction].dy;
     newman.top += Sokoban.descDirection[direction].dx;
 
     var newbox = {};
-    Object.assign(newbox,this.man);
+    Object.assign(newbox, this.man);
     newbox.left += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dy;
     newbox.top += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dx;
 
@@ -545,7 +552,7 @@ Sokoban.prototype.doReturnPush = function(direction) {
                 this.updateClass(this.man.top, this.man.left);
                 this.updateClass(newman.top, newman.left);
                 this.updateClass(newbox.top, newbox.left);
-                Object.assign(this.man,newman);
+                Object.assign(this.man, newman);
                 this.moves.pop();
                 this.viewMoves();
                 setTimeout(() => { this.isSolved() }, 500); //                 done = true;
@@ -565,7 +572,7 @@ Sokoban.prototype.allowedStep = function(direction, man_left, man_top) {
 // обрабатывает действия движения
 Sokoban.prototype.doStep = function(direction) {
     var newman = {};
-    Object.assign(newman,this.man);
+    Object.assign(newman, this.man);
     newman.left += Sokoban.descDirection[direction].dy;
     newman.top += Sokoban.descDirection[direction].dx;
 
@@ -575,7 +582,7 @@ Sokoban.prototype.doStep = function(direction) {
 
     if ((newManState == Sokoban.ITEM_BOX) || (newManState == Sokoban.ITEM_SOLVED)) {
         var newbox = {};
-        Object.assign(newbox,this.man);
+        Object.assign(newbox, this.man);
         newbox.left += Sokoban.descDirection[direction].dy * 2;
         newbox.top += Sokoban.descDirection[direction].dx * 2;
         var newBoxState = this.field[newbox.top][newbox.left];
@@ -592,7 +599,7 @@ Sokoban.prototype.doStep = function(direction) {
                     this.updateClass(this.man.top, this.man.left);
                     this.updateClass(newman.top, newman.left);
                     this.updateClass(newbox.top, newbox.left);
-                    Object.assign(this.man,newman);
+                    Object.assign(this.man, newman);
                     this.moves.push(Sokoban.descDirection[direction]['push']);
                     this.viewMoves();
                     setTimeout(() => { this.isSolved() }, 500);
@@ -607,7 +614,7 @@ Sokoban.prototype.doStep = function(direction) {
                 this.field[newman.top][newman.left] = doAction['changeNew'];
                 this.updateClass(this.man.top, this.man.left);
                 this.updateClass(newman.top, newman.left);
-                Object.assign(this.man,newman);
+                Object.assign(this.man, newman);
                 this.moves.push(direction);
                 this.viewMoves();
                 setTimeout(() => { this.isSolved() }, 500);
