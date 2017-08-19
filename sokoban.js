@@ -1,5 +1,6 @@
 'use strict';
 
+// Конструктор
 function Sokoban(options) {
     this.options = options;
     this.element = this.options.element;
@@ -14,11 +15,12 @@ function Sokoban(options) {
     this.element.innerHTML = '';
     this.element.style.display = "block";
     this.timeToSolved = 0;
-    this.init();
     this.timer;
     this.timerAutoMove;
+    this.init();
 }
 
+// Инициализация
 Sokoban.prototype.init = function() {
     this.loadField();
     this.listen();
@@ -238,16 +240,19 @@ Sokoban.assignData(Sokoban.ITEM_MAN_TARGET, '+', 'sokoban__item-man-target');
 
 Sokoban.prototype.removeField = function() {}
 
+// Обновление времени решения
 Sokoban.prototype.onTime = function() {
-    if (!this.done) {
-        if (this.moves.length > 0) {
-            this.timeToSolved++;
-            this.elementdone.innerHTML = 'Ходов : ' + this.moves.length +
-                ' Время: ' + this.timeToSolved;
-        }
+    if (this.done) {
+        return;
+    }
+    if (this.moves.length > 0) {
+        this.timeToSolved++;
+        this.elementdone.innerHTML = 'Ходов : ' + this.moves.length +
+            ' Время: ' + this.timeToSolved;
     }
 }
 
+// Воспроизведение ходов из очереди автоматических ходов
 Sokoban.prototype.onAutoMove = function() {
     if (this.automoves.length > 0) {
         console.log(this.automoves);
@@ -256,6 +261,7 @@ Sokoban.prototype.onAutoMove = function() {
     }
 }
 
+// Загрузка поля
 Sokoban.prototype.loadField = function() {
     var _this = this;
     this.timeToSolved = 0;
@@ -324,6 +330,7 @@ Sokoban.prototype.loadField = function() {
     console.log(this.field);
 }
 
+// Поиск траектории движения в заданую точку
 Sokoban.prototype.goto = function(top, left) {
     var lpath = [];
     var dleft = left - this.man.left;
@@ -413,6 +420,7 @@ Sokoban.prototype.goto = function(top, left) {
     return [];
 }
 
+// Выбираем действие при клики мышкой по объекту
 Sokoban.prototype.selectFromMouse = function(top, left) {
     if (top < 0) return;
     if (left < 0) return;
@@ -444,16 +452,19 @@ Sokoban.prototype.selectFromMouse = function(top, left) {
     }
 }
 
+//
 Sokoban.prototype.changeClass = function(top, left, type) {
     var itemName = 'item' + top + '_' + left;
     document.getElementById(itemName).className = Sokoban.stateClass[type];
 };
 
+// Обновляем отображаем класс по типу поля
 Sokoban.prototype.updateClass = function(top, left) {
     var itemName = 'item' + top + '_' + left;
     document.getElementById(itemName).className = Sokoban.stateClass[this.field[top][left]];
 };
 
+// проверяем головоломка решена
 Sokoban.prototype.isSolved = function() {
     var count = 0;
     for (var ArrKey in this.targets) {
@@ -476,6 +487,7 @@ Sokoban.prototype.isSolved = function() {
     }
 }
 
+// Преобразуем перемещения в текстовые представления
 Sokoban.prototype.viewMoves = function() {
     var path = ''
     for (var ArrKey in this.moves) {
@@ -484,7 +496,8 @@ Sokoban.prototype.viewMoves = function() {
     console.log(path);
 }
 
-Sokoban.prototype.checkReturn = function() {
+// Основной обработчик отмены хода
+Sokoban.prototype.doReturn = function() {
     if (this.done) {
         return;
     }
@@ -492,29 +505,30 @@ Sokoban.prototype.checkReturn = function() {
         console.log('empty return');
         return;
     }
-        var direction = this.moves.pop();
-        this.moves.push(direction);
-        switch (direction) {
-            case Sokoban.MOVE_TOP:
-            case Sokoban.MOVE_BOTTOM:
-            case Sokoban.MOVE_LEFT:
-            case Sokoban.MOVE_RIGHT:
-                this.doReturnSimple(direction);
-                break;
+    var direction = this.moves.pop();
+    this.moves.push(direction);
+    switch (direction) {
+        case Sokoban.MOVE_TOP:
+        case Sokoban.MOVE_BOTTOM:
+        case Sokoban.MOVE_LEFT:
+        case Sokoban.MOVE_RIGHT:
+            this.doReturnSimple(direction);
+            break;
 
-            case Sokoban.MOVE_PUSH_TOP:
-            case Sokoban.MOVE_PUSH_BOTTOM:
-            case Sokoban.MOVE_PUSH_LEFT:
-            case Sokoban.MOVE_PUSH_RIGHT:
-                this.doReturnPush(direction);
-                break;
-            default:
-                {
-                    console.log('Error')
-                }
-        }
+        case Sokoban.MOVE_PUSH_TOP:
+        case Sokoban.MOVE_PUSH_BOTTOM:
+        case Sokoban.MOVE_PUSH_LEFT:
+        case Sokoban.MOVE_PUSH_RIGHT:
+            this.doReturnPush(direction);
+            break;
+        default:
+            {
+                console.log('Error')
+            }
+    }
 }
 
+// отмена хода без толкания ящика
 Sokoban.prototype.doReturnSimple = function(direction) {
     //console.log('Simple ' + direction);
     var newman = JSON.parse(JSON.stringify(this.man));
@@ -541,6 +555,7 @@ Sokoban.prototype.doReturnSimple = function(direction) {
     }
 }
 
+// отмена хода с толкания ящика
 Sokoban.prototype.doReturnPush = function(direction) {
     //console.log('Push ' + direction);
     var newman = JSON.parse(JSON.stringify(this.man));
@@ -581,9 +596,9 @@ Sokoban.prototype.doReturnPush = function(direction) {
             }
         }
     }
-
 }
 
+// ход доступен
 Sokoban.prototype.allowedStep = function(direction, man_left, man_top) {
     man_left += Sokoban.descDirection[direction].dy;
     man_top += Sokoban.descDirection[direction].dx;
@@ -591,6 +606,7 @@ Sokoban.prototype.allowedStep = function(direction, man_left, man_top) {
     return ((newManState == Sokoban.ITEM_EMPTY) || (newManState == Sokoban.ITEM_TARGET));
 }
 
+// обрабатывает действия движения
 Sokoban.prototype.doStep = function(direction) {
 
     var newman = JSON.parse(JSON.stringify(this.man));
@@ -647,6 +663,7 @@ Sokoban.prototype.doStep = function(direction) {
     }
 }
 
+// слушаем клавиатуру
 Sokoban.prototype.listen = function() {
     var _this = this,
         directions = {
@@ -660,7 +677,7 @@ Sokoban.prototype.listen = function() {
         if (e.keyCode in directions) {
             _this.doStep(directions[e.keyCode]);
         } else if (e.keyCode == 8) {
-            _this.checkReturn();
+            _this.doReturn();
         }
     })
 }
