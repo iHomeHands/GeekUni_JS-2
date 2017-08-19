@@ -490,7 +490,8 @@ Sokoban.prototype.checkReturn = function() {
     }
     if (this.moves.length == 0) {
         console.log('empty return');
-    } else {
+        return;
+    }
         var direction = this.moves.pop();
         this.moves.push(direction);
         switch (direction) {
@@ -512,7 +513,6 @@ Sokoban.prototype.checkReturn = function() {
                     console.log('Error')
                 }
         }
-    }
 }
 
 Sokoban.prototype.doReturnSimple = function(direction) {
