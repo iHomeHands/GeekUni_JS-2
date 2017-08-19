@@ -8,21 +8,28 @@
 </head>
 
 <body>
+    <div>
+    <div class="done" id="done">
+    Ходов: 0 Время: 0
+    </div>
     <div class="sokoban" id="sokoban">
     </div>
-    <div class="done" id="done">
-	  <p>Игра "сокобан"</p>
-	  <p>Управление клавиатурой:</p>
-	  <p>Up - переместить кладовщика вверх</p>	  
-	  <p>Down - переместить кладовщика вниз</p>	  	  
-	  <p>Left - переместить кладовщика влево</p>	  	  	  
-	  <p>Right - переместить кладовщика вправо</p>	  	  	  	  
-	  <p>Backspace - отмена последнего хода</p>	  	  	  	  	  
-	  
-    </div>
+      <a href='javascript:loadLevel(levelId-1);' >Предыдущий</a>
+      <a href='javascript:loadLevel(levelId);' >Заново</a>
+      <a href='javascript:loadLevel(levelId+1);' >Следующий</a>
+        <div>
+          <p>Игра "сокобан"</p>
+          <p>Управление клавиатурой:</p>
+          <p>Up - переместить кладовщика вверх</p>
+          <p>Down - переместить кладовщика вниз</p>
+          <p>Left - переместить кладовщика влево</p>
+          <p>Right - переместить кладовщика вправо</p>
+          <p>Backspace - отмена последнего хода</p>
+        </div>
 
+    </div>
     <script src="sokoban.js" type="text/javascript"></script>
-    <script src="index.js" type="text/javascript"></script>	
+    <script src="index.js" type="text/javascript"></script>
 </body>
 
 </html>
