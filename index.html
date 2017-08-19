@@ -7,10 +7,21 @@
     <link rel="stylesheet" href="style.css">
 </head>
 
+<script id="done__tml" type="text/template">
+Ходов: {{step}} Время: {{time}}
+</script>
+
+<script id="solved__tml" type="text/template">
+<h1>Уровень завершен<h1>
+<p>Количество ходов: {{step}}</p>
+<p>Время на прохождение: {{time}} с </p>
+<a href='javascript:loadLevel(levelId);'>Начать сначало</a>
+<BR>
+<a href='javascript:loadLevel(levelId+1);' >Следующий уровень</a>
+</script>
 <body>
     <div>
     <div class="done" id="done">
-    Ходов: 0 Время: 0
     </div>
     <div class="sokoban" id="sokoban">
     </div>
