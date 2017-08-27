@@ -220,6 +220,9 @@ Sokoban.prototype.removeField = function () {
     this.automoves = [];
     this.field = [];
     this.targets = [];
+    this.elementdone.style.display = "none";
+    this.element.style.display = "block";
+
 };
 
 // Загрузка поля
