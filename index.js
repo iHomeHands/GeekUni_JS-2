@@ -1,6 +1,4 @@
-(() => {
-    levelId = 3;
-})();
+window.levelId = 3;
 
 window.loadLevel = function(id) {
     levelId = id;
