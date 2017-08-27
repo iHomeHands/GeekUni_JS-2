@@ -88,7 +88,7 @@ Sokoban.assignSimple = function(action, a1, b1, a2, b2) {
         'changeOld': a2,
         'changeNew': b2
     }
-}
+};
 
 Sokoban.assignWithPush = function(action, reverseAction, a1, b1, c1, a2, b2, c2) {
     if (action == undefined)
@@ -102,7 +102,7 @@ Sokoban.assignWithPush = function(action, reverseAction, a1, b1, c1, a2, b2, c2)
         'changeOld': a2,
         'changeNew': b2,
         'changeBefore': c2
-    }
+    };
     if (reverseAction == undefined)
         reverseAction = [];
     if (reverseAction[a2] == undefined)
@@ -115,7 +115,7 @@ Sokoban.assignWithPush = function(action, reverseAction, a1, b1, c1, a2, b2, c2)
         'changeNew': b1,
         'changeBefore': c1
     }
-}
+};
 
 //---------------------------------------------------------------
 
@@ -191,13 +191,13 @@ Sokoban.stateItem = {
 // Генерируем контент по шаблону
 Sokoban.prototype.parseTemplate = function(tpl, data) {
     return tpl.replace(/\{\{([^\}]+)\}\}/g, (str, key) => data[key] || '');
-}
+};
 
 // Инициализация
 Sokoban.prototype.init = function() {
     this.loadField();
     this.listen();
-}
+};
 
 // Определяет тип обекта по условному обозначению
 Sokoban.getType = function(my_char) {
@@ -206,7 +206,7 @@ Sokoban.getType = function(my_char) {
             return key;
         }
     }
-}
+};
 
 // Очищение поля
 Sokoban.prototype.removeField = function() {
@@ -216,7 +216,7 @@ Sokoban.prototype.removeField = function() {
     this.automoves = [];
     this.field = [];
     this.targets = [];
-}
+};
 
 // Загрузка поля
 Sokoban.prototype.loadField = function() {
@@ -268,7 +268,7 @@ Sokoban.prototype.loadField = function() {
             this.element.appendChild(sokobanItem);
         }
     }
-}
+};
 // Обновление отображения времени решения
 Sokoban.prototype.updateTime = function() {
     this.elementdone.innerHTML =
@@ -276,7 +276,7 @@ Sokoban.prototype.updateTime = function() {
             'step': this.moves.length,
             'time': this.timeToSolved
         });
-}
+};
 
 // Пересчет времени решения
 Sokoban.prototype.onTime = function() {
@@ -287,7 +287,7 @@ Sokoban.prototype.onTime = function() {
         this.timeToSolved++;
         this.updateTime();
     }
-}
+};
 
 // Воспроизведение ходов из очереди автоматических ходов
 Sokoban.prototype.onAutoMove = function() {
@@ -296,7 +296,7 @@ Sokoban.prototype.onAutoMove = function() {
     }
     var dir = this.automoves.shift();
     this.doStep(dir);
-}
+};
 
 // Поиск траектории движения в заданую точку
 Sokoban.prototype.goto = function(top, left) {
@@ -385,7 +385,7 @@ Sokoban.prototype.goto = function(top, left) {
         return tmppath;
     }
     return [];
-}
+};
 
 // Выбираем действие при клики мышкой по объекту
 Sokoban.prototype.selectFromMouse = function(top, left) {
@@ -417,7 +417,7 @@ Sokoban.prototype.selectFromMouse = function(top, left) {
         this.mouse.top = top;
         this.mouse.left = left;
     }
-}
+};
 
 //
 Sokoban.prototype.changeClass = function(top, left, type) {
@@ -454,16 +454,16 @@ Sokoban.prototype.isSolved = function() {
         this.elementdone.style.display = "block";
         this.element.style.display = "none";
     }
-}
+};
 
 // Преобразуем перемещения в текстовые представления
 Sokoban.prototype.viewMoves = function() {
-    var path = ''
+    var path = '';
     for (var ArrKey in this.moves) {
         path += Sokoban.descDirection[this.moves[ArrKey]]['short'];
     }
     console.log(path);
-}
+};
 
 // Основной обработчик отмены хода
 Sokoban.prototype.doReturn = function() {
@@ -495,7 +495,7 @@ Sokoban.prototype.doReturn = function() {
                 console.log('Error')
             }
     }
-}
+};
 
 // отмена хода без толкания ящика
 Sokoban.prototype.doReturnSimple = function(direction) {
@@ -520,7 +520,7 @@ Sokoban.prototype.doReturnSimple = function(direction) {
             setTimeout(() => { this.isSolved() }, 500);
         }
     }
-}
+};
 
 // отмена хода с толкания ящика
 Sokoban.prototype.doReturnPush = function(direction) {
@@ -559,7 +559,7 @@ Sokoban.prototype.doReturnPush = function(direction) {
             }
         }
     }
-}
+};
 
 // ход доступен
 Sokoban.prototype.allowedStep = function(direction, man_left, man_top) {
@@ -567,7 +567,7 @@ Sokoban.prototype.allowedStep = function(direction, man_left, man_top) {
     man_top += Sokoban.descDirection[direction].dx;
     var newManState = this.field[man_top][man_left];
     return ((newManState == Sokoban.ITEM_EMPTY) || (newManState == Sokoban.ITEM_TARGET));
-}
+};
 
 // обрабатывает действия движения
 Sokoban.prototype.doStep = function(direction) {
@@ -621,7 +621,7 @@ Sokoban.prototype.doStep = function(direction) {
             }
         }
     }
-}
+};
 
 // слушаем клавиатуру
 Sokoban.prototype.listen = function() {
@@ -630,7 +630,7 @@ Sokoban.prototype.listen = function() {
         40: Sokoban.MOVE_BOTTOM,
         37: Sokoban.MOVE_LEFT,
         39: Sokoban.MOVE_RIGHT
-    }
+    };
     window.addEventListener('keydown', (e) => {
 
         if (e.keyCode in directions) {
@@ -639,4 +639,4 @@ Sokoban.prototype.listen = function() {
             this.doReturn();
         }
     })
-}
+};

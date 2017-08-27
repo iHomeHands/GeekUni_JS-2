@@ -4,7 +4,7 @@
 
 window.loadLevel = function(id) {
     levelId = id;
-    var xhr = false;
+    let xhr = false;
     if (window.XMLHttpRequest) {
         xhr = new XMLHttpRequest();
         if (xhr.overrideMimeType)
@@ -28,7 +28,7 @@ window.loadLevel = function(id) {
         if ((xhr.readyState != 4) || (xhr.status != 200)) {
             return;
         }
-        var items = JSON.parse(xhr.responseText);
+        let items = JSON.parse(xhr.responseText);
         console.dir(items);
         if (items.level[id]!= undefined){
 	        console.dir(window.aSokoban);
@@ -45,7 +45,7 @@ window.loadLevel = function(id) {
 	        	window.aSokoban.loadField();
 	        }
         }
-    }
+    };
     xhr.ontimeout = function() {
         alert('Превышено время ожидания запроса');
     };
