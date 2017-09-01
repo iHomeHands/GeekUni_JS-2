@@ -222,7 +222,6 @@ Sokoban.prototype.removeField = function () {
     this.targets = [];
     this.elementdone.style.display = "none";
     this.element.style.display = "block";
-
 };
 
 // Загрузка поля
@@ -309,6 +308,7 @@ Sokoban.prototype.onAutoMove = function () {
         return;
     }
     let dir = this.automoves.shift();
+    console.log('dir',dir);
     this.doStep(dir);
 };
 
@@ -317,8 +317,119 @@ Sokoban.prototype.isWrongPos = function (top, left) {
     return ((top < 0) || (left < 0) || (top >= this.height) || (left >= this.width));
 };
 
+Sokoban.prototype.findPathWithPushInner = function (aFromTop, aFromLeft, aTop, aLeft) {
+    console.log(aFromTop, aFromLeft, aTop, aLeft);
+    var newman = {};
+    var wave = [];
+    var step = 0; // шаг волнового алгоритма
+    var idxDirection = 0; // индех обхода направления
+    var nextStep = 1;
+    var count = 0;
+    var top, left;
+    var i, // индекс позиции поля
+        j; // индекс позиции поля
+    newman.top = aTop;
+    newman.left = aLeft;
+
+    for (i = 0; i < this.height; i++) {
+        wave[i] = [];
+        for (j = 0; j < this.width; j++) {
+            wave[i][j] = -1;
+        }
+    }
+    //console.log(wave);
+    wave[newman.top][newman.left] = step;
+    for (step = 0; step < 100; step++) {
+        count = 0;
+        for (i = 0; i < this.height; i++) {
+            for (j = 0; j < this.width; j++) {
+                if (wave[i][j] == step) {
+                    for (idxDirection = Sokoban.MOVE_TOP; idxDirection < Sokoban.MOVE_PUSH_TOP; idxDirection++) {
+                        top = i + Sokoban.descDirection[idxDirection].dx;
+                        left = j + Sokoban.descDirection[idxDirection].dy;
+                        if (this.isWrongPos(top, left)) {
+                            continue;
+                        }
+                        if (wave[top][left] == -1) {
+                            if (( top == aFromTop) && (left == aFromLeft)) {
+                                wave[top][left] = step + 1;
+                            }
+                            if (
+                                (this.field[top][left] == Sokoban.ITEM_WALL) ||
+                                (this.field[top][left] == Sokoban.ITEM_BOX) ||
+                                (this.field[top][left] == Sokoban.ITEM_SOLVED)
+                            ) {
+                                continue;
+                            }
+                            wave[top][left] = step + 1;
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+        if (count == 0) {
+            break;
+        }
+        if (wave[aFromTop][aFromLeft] !== -1) {
+            break;
+        }
+    }
+    if (wave[aFromTop][aFromLeft] !== -1) {
+        top = parseInt(aFromTop);
+        left = parseInt(aFromLeft);
+        let tmppath = [];
+        for (step = wave[aFromTop][aFromLeft]; step > 0; step--) {
+            console.log(step);
+            for (idxDirection = Sokoban.MOVE_TOP; idxDirection < Sokoban.MOVE_PUSH_TOP; idxDirection++) {
+                i = top + Sokoban.descDirection[idxDirection].dx;
+                j = left + Sokoban.descDirection[idxDirection].dy;
+                if (this.isWrongPos(i, j)) {
+                    continue;
+                }
+                if (wave[i][j] !== (step - 1)) {
+                    continue;
+                }
+                tmppath.unshift(idxDirection);
+                //tmppath.unshift(idxDirection);
+                top = i;
+                left = j;
+                break;
+            }
+        }
+        console.log(tmppath);
+        return tmppath;
+    }
+    console.log(wave);
+    return [];
+};
+
+// Поиск траектории движения с толкание в заданую точку
+Sokoban.prototype.findPathWithPush = function (aFromTop, aFromLeft, aTop, aLeft) {
+    var findedPath = [];
+    var newman = {};
+    var i
+    for (i = Sokoban.MOVE_TOP; i < Sokoban.MOVE_PUSH_TOP; i++) {
+        newman.top = parseInt(aFromTop) + Sokoban.descDirection[i].dy;
+        newman.left = parseInt(aFromLeft) + Sokoban.descDirection[i].dx;
+        findedPath[i] = this.findPath(newman.top, newman.left);
+        if (findedPath[i].length > 0) {
+            var lpath = this.findPathWithPushInner(aFromTop, aFromLeft, aTop, aLeft);
+            console.log(lpath);
+            console.log(findedPath[i])
+            if (lpath.length > 0) {
+                lpath=findedPath[i].concat(lpath);
+                console.log(lpath);
+                return lpath;
+            }
+        }
+    }
+    console.log(findedPath);
+    return [];
+};
+
 // Поиск траектории движения в заданую точку
-Sokoban.prototype.goto = function (aTop, aLeft) {
+Sokoban.prototype.findPath = function (aTop, aLeft) {
     var newman = {};
     var wave = [];
     var step = 0; // шаг волнового алгоритма
@@ -379,7 +490,7 @@ Sokoban.prototype.goto = function (aTop, aLeft) {
             for (idxDirection = Sokoban.MOVE_TOP; idxDirection < Sokoban.MOVE_PUSH_TOP; idxDirection++) {
                 i = top + Sokoban.descDirection[idxDirection].dx;
                 j = left + Sokoban.descDirection[idxDirection].dy;
-                if (this.isWrongPos(i,j)){
+                if (this.isWrongPos(i, j)) {
                     continue;
                 }
                 if (wave[i][j] !== (step - 1)) {
@@ -393,7 +504,7 @@ Sokoban.prototype.goto = function (aTop, aLeft) {
         }
         return tmppath;
     }
-    console.log(wave);
+    //console.log(wave);
     return [];
 };
 
@@ -492,7 +603,7 @@ Sokoban.prototype.selectFromMouse = function (top, left) {
     if (top >= this.Width) return;
     if (left >= this.Height) return;
     if (this.field[top][left] == Sokoban.ITEM_EMPTY) {
-        var path = this.goto(top, left);
+        var path = this.findPath(top, left);
         console.dir(path);
         if (path != []) {
             this.automoves = path;
@@ -501,9 +612,13 @@ Sokoban.prototype.selectFromMouse = function (top, left) {
     }
     if (this.field[top][left] == Sokoban.ITEM_TARGET) {
         if (this.field[this.mouse.top][this.mouse.left] == Sokoban.ITEM_BOX) {
-            alert('go target');
+            var path = this.findPathWithPush(this.mouse.top, this.mouse.left, top, left);
+            console.dir(path);
+            if (path != []) {
+                this.automoves = path;
+            }
         } else {
-            var path = this.goto(top, left);
+            var path = this.findPath(top, left);
             console.dir(path);
             if (path != []) {
                 this.automoves = path;
