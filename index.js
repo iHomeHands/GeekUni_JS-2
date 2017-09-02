@@ -4,7 +4,7 @@
 
 window.loadLevel = function(id) {
     levelId = id;
-    var xhr = false;
+    let xhr = false;
     if (window.XMLHttpRequest) {
         xhr = new XMLHttpRequest();
         if (xhr.overrideMimeType)
@@ -25,14 +25,14 @@ window.loadLevel = function(id) {
     }
 
     xhr.onreadystatechange = function() {
-        if ((xhr.readyState != 4) || (xhr.status != 200)) {
+        if ((xhr.readyState !== 4) || (xhr.status !== 200)) {
             return;
         }
-        var items = JSON.parse(xhr.responseText);
+        let items = JSON.parse(xhr.responseText);
         console.dir(items);
-        if (items.level[id]!= undefined){
+        if (items.level[id]!== undefined){
 	        console.dir(window.aSokoban);
-	        if (window.aSokoban == undefined) {
+	        if (window.aSokoban === undefined) {
 	            window.aSokoban = new Sokoban({
 	                element: document.getElementById('sokoban'),
 	                elementdone: document.getElementById('done'),
@@ -45,7 +45,7 @@ window.loadLevel = function(id) {
 	        	window.aSokoban.loadField();
 	        }
         }
-    }
+    };
     xhr.ontimeout = function() {
         alert('Превышено время ожидания запроса');
     };
