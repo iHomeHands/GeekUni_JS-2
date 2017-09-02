@@ -93,11 +93,11 @@ Sokoban.assignSimple = function (action, a1, b1, a2, b2) {
 };
 
 Sokoban.assignWithPush = function (action, reverseAction, a1, b1, c1, a2, b2, c2) {
-    if (undefined === action)
+    if (!action)
         action = [];
-    if (undefined === action[a1])
+    if (! action[a1])
         action[a1] = [];
-    if (undefined === action[a1][b1])
+    if (! action[a1][b1])
         action[a1][b1] = [];
 
     action[a1][b1][c1] = {
@@ -105,13 +105,13 @@ Sokoban.assignWithPush = function (action, reverseAction, a1, b1, c1, a2, b2, c2
         'changeNew': b2,
         'changeBefore': c2
     };
-    if (undefined === reverseAction) {
+    if (!reverseAction) {
         reverseAction = [];
     }
-    if (undefined === reverseAction[a2]) {
+    if (!reverseAction[a2]) {
         reverseAction[a2] = [];
     }
-    if (undefined === reverseAction[a2][b2]) {
+    if (!reverseAction[a2][b2]) {
         reverseAction[a2][b2] = [];
     }
     reverseAction[a2][b2][c2] = {
@@ -716,9 +716,9 @@ Sokoban.prototype.doReturnSimple = function (direction) {
     const oldManState = this.field[this.man.top][this.man.left];
 
     const newManState = this.field[newman.top][newman.left];
-    if (undefined !== Sokoban.simple[oldManState]) {
+    if ( Sokoban.simple[oldManState]) {
         const doAction = Sokoban.simple[oldManState][newManState];
-        if (undefined !== doAction ) {
+        if ( doAction) {
             this.field[this.man.top][this.man.left] = doAction['changeOld'];
             this.field[newman.top][newman.left] = doAction['changeNew'];
             this.updateClass(this.man.top, this.man.left);
@@ -750,10 +750,10 @@ Sokoban.prototype.doReturnPush = function (direction) {
     const oldManState = this.field[newman.top][newman.left];
 
     const newBoxState = this.field[newbox.top][newbox.left];
-    if (undefined !== Sokoban.reverseAction[oldManState]) {
+    if ( Sokoban.reverseAction[oldManState]) {
         const doAction = Sokoban.reverseAction[oldManState][newManState];
-        if (undefined !== doAction ) {
-            if (undefined !== doAction[newBoxState]) {
+        if ( doAction) {
+            if ( doAction[newBoxState]) {
                 this.field[this.man.top][this.man.left] =
                     doAction[newBoxState]['changeNew'];
                 this.field[newman.top][newman.left] =
@@ -801,8 +801,8 @@ Sokoban.prototype.doStep = function (direction) {
         const newBoxState = this.field[newbox.top][newbox.left];
         if (Sokoban.action[oldManState] !== undefined) {
             let doAction = Sokoban.action[oldManState][newManState];
-            if (undefined !== doAction) {
-                if (undefined !== doAction[newBoxState]) {
+            if ( doAction) {
+                if ( doAction[newBoxState]) {
                     this.field[this.man.top][this.man.left] =
                         doAction[newBoxState]['changeOld'];
                     this.field[newman.top][newman.left] =
@@ -822,9 +822,9 @@ Sokoban.prototype.doStep = function (direction) {
             }
         }
     } else {
-        if (undefined !== Sokoban.simple[oldManState] ) {
+        if ( Sokoban.simple[oldManState]) {
             let doAction = Sokoban.simple[oldManState][newManState];
-            if (undefined !== doAction ) {
+            if ( doAction) {
                 this.field[this.man.top][this.man.left] = doAction['changeOld'];
                 this.field[newman.top][newman.left] = doAction['changeNew'];
                 this.updateClass(this.man.top, this.man.left);
