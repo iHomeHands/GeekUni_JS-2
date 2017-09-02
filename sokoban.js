@@ -93,11 +93,11 @@ Sokoban.assignSimple = function (action, a1, b1, a2, b2) {
 };
 
 Sokoban.assignWithPush = function (action, reverseAction, a1, b1, c1, a2, b2, c2) {
-    if (action == undefined)
+    if (action === undefined)
         action = [];
-    if (action[a1] == undefined)
+    if (action[a1] === undefined)
         action[a1] = [];
-    if (action[a1][b1] == undefined)
+    if (action[a1][b1] === undefined)
         action[a1][b1] = [];
 
     action[a1][b1][c1] = {
@@ -205,7 +205,7 @@ Sokoban.prototype.init = function () {
 
 // Определяет тип обекта по условному обозначению
 Sokoban.getType = function (my_char) {
-    for (var key in Sokoban.stateItem) {
+    for (let key in Sokoban.stateItem) {
         if (Sokoban.stateItem[key]['char'] === my_char) {
             return key;
         }
@@ -245,9 +245,9 @@ Sokoban.prototype.loadField = function () {
     this.element.style.width = (this.width * this.options.cellSize) + 'px';
 
     this.element.style.height = ( this.height * this.options.cellSize) + 'px';
-    for (var i = 0; i < this.options.level[this.options.levelId].Height; i++) {
+    for (let i = 0; i < this.options.level[this.options.levelId].Height; i++) {
         this.field[i] = [];
-        for (var j = 0; j < this.options.level[this.options.levelId].Width; j++) {
+        for (let j = 0; j < this.options.level[this.options.levelId].Width; j++) {
             if (this.options.level[this.options.levelId].L[i].length > j) {
                 this.field[i][j] = Sokoban.getType(this.options.level[this.options.levelId].L[i].charAt(j));
             } else {
@@ -264,7 +264,7 @@ Sokoban.prototype.loadField = function () {
                 this.targets.push({'top': i, 'left': j});
             }
 
-            var sokobanItem = document.createElement('div');
+            let sokobanItem = document.createElement('div');
             sokobanItem.className = Sokoban.stateItem[this.field[i][j]].class;
             sokobanItem.id = 'item' + i + '_' + j;
             sokobanItem.dataset.top = i;
@@ -274,7 +274,7 @@ Sokoban.prototype.loadField = function () {
 
             sokobanItem.style.top = (i * this.options.cellSize) + 'px';
             sokobanItem.style.left = (j * this.options.cellSize) + 'px';
-            var _this = this;
+            let _this = this;
             sokobanItem.addEventListener("click", function () {
                 _this.selectFromMouse(this.dataset.top, this.dataset.left);
             });
@@ -282,6 +282,7 @@ Sokoban.prototype.loadField = function () {
         }
     }
 };
+
 // Обновление отображения времени решения
 Sokoban.prototype.updateTime = function () {
     this.elementdone.innerHTML =
@@ -304,7 +305,7 @@ Sokoban.prototype.onTime = function () {
 
 // Воспроизведение ходов aTз очaLреди автоматических ходов
 Sokoban.prototype.onAutoMove = function () {
-    if (this.automoves.length == 0) {
+    if (this.automoves.length === 0) {
         return;
     }
     let dir = this.automoves.shift();
@@ -318,35 +319,26 @@ Sokoban.prototype.isWrongPos = function (top, left) {
 };
 
 Sokoban.prototype.allowSimpleStep = function (aTop, aLeft) {
-    if (
-        (this.field[aTop][aLeft] == Sokoban.ITEM_WALL) ||
-        (this.field[aTop][aLeft] == Sokoban.ITEM_BOX) ||
-        (this.field[aTop][aLeft] == Sokoban.ITEM_SOLVED)) {
-        return false;
-    }
-    return true;
-}
+    return !((this.field[aTop][aLeft] == Sokoban.ITEM_WALL) ||
+    (this.field[aTop][aLeft] == Sokoban.ITEM_BOX) ||
+    (this.field[aTop][aLeft] == Sokoban.ITEM_SOLVED));
+};
 
 Sokoban.prototype.allowPushStep = function (aTop, aLeft) {
-    if (
-        (this.field[aTop][aLeft] == Sokoban.ITEM_WALL) ||
-        (this.field[aTop][aLeft] == Sokoban.ITEM_BOX) ||
-        (this.field[aTop][aLeft] == Sokoban.ITEM_SOLVED)) {
-        return false;
-    }
-    return true;
-}
+    return !((this.field[aTop][aLeft] == Sokoban.ITEM_WALL) ||
+    (this.field[aTop][aLeft] == Sokoban.ITEM_BOX) ||
+    (this.field[aTop][aLeft] == Sokoban.ITEM_SOLVED));
+};
 
 Sokoban.prototype.findPathWithPushInner = function (aFromTop, aFromLeft, aTop, aLeft) {
     console.log(aFromTop, aFromLeft, aTop, aLeft);
-    var newman = {};
-    var wave = [];
-    var step = 0; // шаг волнового алгоритма
-    var idxDirection = 0; // индех обхода направления
-    var nextStep = 1;
-    var count = 0;
-    var top, left;
-    var i, // индекс позиции поля
+    let newman = {};
+    let wave = [];
+    let step = 0; // шаг волнового алгоритма
+    let idxDirection = 0; // индех обхода направления
+    let count = 0;
+    let top, left;
+    let i, // индекс позиции поля
         j; // индекс позиции поля
     newman.top = aTop;
     newman.left = aLeft;
@@ -363,14 +355,14 @@ Sokoban.prototype.findPathWithPushInner = function (aFromTop, aFromLeft, aTop, a
         count = 0;
         for (i = 0; i < this.height; i++) {
             for (j = 0; j < this.width; j++) {
-                if (wave[i][j] == step) {
+                if (wave[i][j] === step) {
                     for (idxDirection = Sokoban.MOVE_TOP; idxDirection < Sokoban.MOVE_PUSH_TOP; idxDirection++) {
                         top = i + Sokoban.descDirection[idxDirection].dx;
                         left = j + Sokoban.descDirection[idxDirection].dy;
                         if (this.isWrongPos(top, left)) {
                             continue;
                         }
-                        if (wave[top][left] == -1) {
+                        if (wave[top][left] === -1) {
                             if (( top == aFromTop) && (left == aFromLeft)) {
                                 wave[top][left] = step + 1;
                             }
@@ -384,7 +376,7 @@ Sokoban.prototype.findPathWithPushInner = function (aFromTop, aFromLeft, aTop, a
                 }
             }
         }
-        if (count == 0) {
+        if (count === 0) {
             break;
         }
         if (wave[aFromTop][aFromLeft] !== -1) {
@@ -407,7 +399,6 @@ Sokoban.prototype.findPathWithPushInner = function (aFromTop, aFromLeft, aTop, a
                     continue;
                 }
                 tmppath.unshift(idxDirection);
-                //tmppath.unshift(idxDirection);
                 top = i;
                 left = j;
                 break;
@@ -422,26 +413,26 @@ Sokoban.prototype.findPathWithPushInner = function (aFromTop, aFromLeft, aTop, a
 
 // Поиск траектории движения с толкание в заданую точку
 Sokoban.prototype.findPathWithPush = function (aFromTop, aFromLeft, aTop, aLeft) {
-    var findedPath = [];
-    var newman = {};
-    var i
-    var corrPath = [];
+    let findedPath = [];
+    let newman = {};
+    let i;
+    let corrPath = [];
     for (i = Sokoban.MOVE_TOP; i < Sokoban.MOVE_PUSH_TOP; i++) {
         newman.top = parseInt(aFromTop) + Sokoban.descDirection[i].dy;
         newman.left = parseInt(aFromLeft) + Sokoban.descDirection[i].dx;
         findedPath[i] = this.findPath(newman.top, newman.left);
-        if (findedPath[i].length == 0) {
+        if (findedPath[i].length === 0) {
             continue;
         }
-        var lpath = this.findPathWithPushInner(aFromTop, aFromLeft, aTop, aLeft);
+        let lpath = this.findPathWithPushInner(aFromTop, aFromLeft, aTop, aLeft);
         console.log(lpath);
-        console.log(findedPath[i])
-        if (lpath.length == 0) {
+        console.log(findedPath[i]);
+        if (lpath.length === 0) {
             continue;
         }
         lpath = findedPath[i].concat(lpath);
         console.log(lpath);
-        if (corrPath.length == 0) {
+        if (corrPath.length === 0) {
             corrPath = lpath
         }
         if (lpath.length < corrPath.length) {
@@ -454,14 +445,13 @@ Sokoban.prototype.findPathWithPush = function (aFromTop, aFromLeft, aTop, aLeft)
 
 // Поиск траектории движения в заданую точку
 Sokoban.prototype.findPath = function (aTop, aLeft) {
-    var newman = {};
-    var wave = [];
-    var step = 0; // шаг волнового алгоритма
-    var idxDirection = 0; // индех обхода направления
-    var nextStep = 1;
-    var count = 0;
-    var top, left;
-    var i, // индекс позиции поля
+    const newman = {};
+    const wave = [];
+    let step = 0; // шаг волнового алгоритма
+    let idxDirection = 0; // индех обхода направления
+    let count = 0;
+    let top, left;
+    let i, // индекс позиции поля
         j; // индекс позиции поля
     Object.assign(newman, this.man);
 
@@ -477,14 +467,14 @@ Sokoban.prototype.findPath = function (aTop, aLeft) {
         count = 0;
         for (i = 0; i < this.height; i++) {
             for (j = 0; j < this.width; j++) {
-                if (wave[i][j] == step) {
+                if (wave[i][j] === step) {
                     for (idxDirection = Sokoban.MOVE_TOP; idxDirection < Sokoban.MOVE_PUSH_TOP; idxDirection++) {
                         top = i + Sokoban.descDirection[idxDirection].dx;
                         left = j + Sokoban.descDirection[idxDirection].dy;
                         if (this.isWrongPos(top, left)) {
                             continue;
                         }
-                        if (wave[top][left] == -1) {
+                        if (wave[top][left] === -1) {
                             if (!this.allowSimpleStep(top, left)) {
                                 continue;
                             }
@@ -495,7 +485,7 @@ Sokoban.prototype.findPath = function (aTop, aLeft) {
                 }
             }
         }
-        if (count == 0) {
+        if (count === 0) {
             break;
         }
         if (wave[aTop][aLeft] !== -1) {
@@ -629,15 +619,15 @@ Sokoban.prototype.selectFromMouse = function (top, left) {
         return;
     }
     if (this.field[this.mouse.top][this.mouse.left] == Sokoban.ITEM_BOX) {
-        var path = this.findPathWithPush(this.mouse.top, this.mouse.left, top, left);
+        let path = this.findPathWithPush(this.mouse.top, this.mouse.left, top, left);
         console.dir(path);
-        if (path != []) {
+        if (path !== []) {
             this.automoves = path;
         }
     } else {
-        var path = this.findPath(top, left);
+        let path = this.findPath(top, left);
         console.dir(path);
-        if (path != []) {
+        if (path !== []) {
             this.automoves = path;
         }
 
@@ -646,30 +636,30 @@ Sokoban.prototype.selectFromMouse = function (top, left) {
 
 //
 Sokoban.prototype.changeClass = function (top, left, type) {
-    var itemName = 'item' + top + '_' + left;
+    const itemName = 'item' + top + '_' + left;
     document.getElementById(itemName).className = Sokoban.stateItem[type].class;
 };
 
 // Обновляем отображаем класс по типу поля
 Sokoban.prototype.updateClass = function (top, left) {
-    var itemName = 'item' + top + '_' + left;
+    const itemName = 'item' + top + '_' + left;
     document.getElementById(itemName).className = Sokoban.stateItem[this.field[top][left]].class;
 };
 
 // проверяем головоломка решена
 Sokoban.prototype.isSolved = function () {
-    var count = 0;
-    for (var ArrKey in this.targets) {
-        var type = this.field[this.targets[ArrKey]['top']]
+    let count = 0;
+    for (let ArrKey in this.targets) {
+        const type = this.field[this.targets[ArrKey]['top']]
             [this.targets[ArrKey]['left']];
         if (type != Sokoban.ITEM_SOLVED) {
             count++;
         }
     }
-    if (count != 0) {
+    if (count !== 0) {
         return;
     }
-    if (this.done == false) {
+    if (this.done === false) {
         this.done = true;
         this.elementdone.innerHTML =
             this.parseTemplate(document.getElementById('solved__tml').textContent, {
@@ -683,8 +673,8 @@ Sokoban.prototype.isSolved = function () {
 
 // Преобразуем перемещения в текстовые представления
 Sokoban.prototype.viewMoves = function () {
-    var path = '';
-    for (var ArrKey in this.moves) {
+    let path = '';
+    for (let ArrKey in this.moves) {
         path += Sokoban.descDirection[this.moves[ArrKey]]['short'];
     }
     console.log(path);
@@ -695,11 +685,11 @@ Sokoban.prototype.doReturn = function () {
     if (this.done) {
         return;
     }
-    if (this.moves.length == 0) {
+    if (this.moves.length === 0) {
         console.log('empty return');
         return;
     }
-    var direction = this.moves.pop();
+    const direction = this.moves.pop();
     this.moves.push(direction);
     switch (direction) {
         case Sokoban.MOVE_TOP:
@@ -723,17 +713,17 @@ Sokoban.prototype.doReturn = function () {
 
 // отмена хода без толкания ящика
 Sokoban.prototype.doReturnSimple = function (direction) {
-    var newman = {};
+    const newman = {};
     Object.assign(newman, this.man);
     newman.left += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dy;
     newman.top += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dx;
 
-    var oldManState = this.field[this.man.top][this.man.left];
+    const oldManState = this.field[this.man.top][this.man.left];
 
-    var newManState = this.field[newman.top][newman.left];
-    if (Sokoban.simple[oldManState] != undefined) {
-        var doAction = Sokoban.simple[oldManState][newManState];
-        if (doAction != undefined) {
+    const newManState = this.field[newman.top][newman.left];
+    if (Sokoban.simple[oldManState] !== undefined) {
+        const doAction = Sokoban.simple[oldManState][newManState];
+        if (doAction !== undefined) {
             this.field[this.man.top][this.man.left] = doAction['changeOld'];
             this.field[newman.top][newman.left] = doAction['changeNew'];
             this.updateClass(this.man.top, this.man.left);
@@ -750,25 +740,25 @@ Sokoban.prototype.doReturnSimple = function (direction) {
 
 // отмена хода с толкания ящика
 Sokoban.prototype.doReturnPush = function (direction) {
-    var newman = {};
+    const newman = {};
     Object.assign(newman, this.man);
     newman.left += Sokoban.descDirection[direction].dy;
     newman.top += Sokoban.descDirection[direction].dx;
 
-    var newbox = {};
+    const newbox = {};
     Object.assign(newbox, this.man);
     newbox.left += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dy;
     newbox.top += Sokoban.descDirection[Sokoban.descDirection[direction]['reverse']].dx;
 
-    var newManState = this.field[this.man.top][this.man.left];
+    const newManState = this.field[this.man.top][this.man.left];
 
-    var oldManState = this.field[newman.top][newman.left];
+    const oldManState = this.field[newman.top][newman.left];
 
-    var newBoxState = this.field[newbox.top][newbox.left];
-    if (Sokoban.reverseAction[oldManState] != undefined) {
-        var doAction = Sokoban.reverseAction[oldManState][newManState];
-        if (doAction != undefined) {
-            if (doAction[newBoxState] != undefined) {
+    const newBoxState = this.field[newbox.top][newbox.left];
+    if (Sokoban.reverseAction[oldManState] !== undefined) {
+        const doAction = Sokoban.reverseAction[oldManState][newManState];
+        if (doAction !== undefined) {
+            if (doAction[newBoxState] !== undefined) {
                 this.field[this.man.top][this.man.left] =
                     doAction[newBoxState]['changeNew'];
                 this.field[newman.top][newman.left] =
@@ -793,31 +783,31 @@ Sokoban.prototype.doReturnPush = function (direction) {
 Sokoban.prototype.allowedStep = function (direction, man_left, man_top) {
     man_left += Sokoban.descDirection[direction].dy;
     man_top += Sokoban.descDirection[direction].dx;
-    var newManState = this.field[man_top][man_left];
+    const newManState = this.field[man_top][man_left];
     return ((newManState == Sokoban.ITEM_EMPTY) || (newManState == Sokoban.ITEM_TARGET));
 };
 
 // обрабатывает действия движения
 Sokoban.prototype.doStep = function (direction) {
-    var newman = {};
+    const newman = {};
     Object.assign(newman, this.man);
     newman.left += Sokoban.descDirection[direction].dy;
     newman.top += Sokoban.descDirection[direction].dx;
 
-    var oldManState = this.field[this.man.top][this.man.left];
+    const oldManState = this.field[this.man.top][this.man.left];
 
-    var newManState = this.field[newman.top][newman.left];
+    const newManState = this.field[newman.top][newman.left];
 
     if ((newManState == Sokoban.ITEM_BOX) || (newManState == Sokoban.ITEM_SOLVED)) {
-        var newbox = {};
+        const newbox = {};
         Object.assign(newbox, this.man);
         newbox.left += Sokoban.descDirection[direction].dy * 2;
         newbox.top += Sokoban.descDirection[direction].dx * 2;
-        var newBoxState = this.field[newbox.top][newbox.left];
-        if (Sokoban.action[oldManState] != undefined) {
-            var doAction = Sokoban.action[oldManState][newManState];
-            if (doAction != undefined) {
-                if (doAction[newBoxState] != undefined) {
+        const newBoxState = this.field[newbox.top][newbox.left];
+        if (Sokoban.action[oldManState] !== undefined) {
+            let doAction = Sokoban.action[oldManState][newManState];
+            if (doAction !== undefined) {
+                if (doAction[newBoxState] !== undefined) {
                     this.field[this.man.top][this.man.left] =
                         doAction[newBoxState]['changeOld'];
                     this.field[newman.top][newman.left] =
@@ -837,9 +827,9 @@ Sokoban.prototype.doStep = function (direction) {
             }
         }
     } else {
-        if (Sokoban.simple[oldManState] != undefined) {
-            var doAction = Sokoban.simple[oldManState][newManState];
-            if (doAction != undefined) {
+        if (Sokoban.simple[oldManState] !== undefined) {
+            let doAction = Sokoban.simple[oldManState][newManState];
+            if (doAction !== undefined) {
                 this.field[this.man.top][this.man.left] = doAction['changeOld'];
                 this.field[newman.top][newman.left] = doAction['changeNew'];
                 this.updateClass(this.man.top, this.man.left);
@@ -857,7 +847,7 @@ Sokoban.prototype.doStep = function (direction) {
 
 // слушаем клавиатуру
 Sokoban.prototype.listen = function () {
-    var directions = {
+    const directions = {
         38: Sokoban.MOVE_TOP,
         40: Sokoban.MOVE_BOTTOM,
         37: Sokoban.MOVE_LEFT,
@@ -867,7 +857,7 @@ Sokoban.prototype.listen = function () {
 
         if (e.keyCode in directions) {
             this.doStep(directions[e.keyCode]);
-        } else if (e.keyCode == 8) {
+        } else if (e.keyCode === 8) {
             this.doReturn();
         }
     })
