@@ -308,7 +308,7 @@ Sokoban.prototype.onAutoMove = function () {
         return;
     }
     let dir = this.automoves.shift();
-    console.log('dir',dir);
+    console.log('dir', dir);
     this.doStep(dir);
 };
 
@@ -409,6 +409,7 @@ Sokoban.prototype.findPathWithPush = function (aFromTop, aFromLeft, aTop, aLeft)
     var findedPath = [];
     var newman = {};
     var i
+    var corrPath = [];
     for (i = Sokoban.MOVE_TOP; i < Sokoban.MOVE_PUSH_TOP; i++) {
         newman.top = parseInt(aFromTop) + Sokoban.descDirection[i].dy;
         newman.left = parseInt(aFromLeft) + Sokoban.descDirection[i].dx;
@@ -418,14 +419,19 @@ Sokoban.prototype.findPathWithPush = function (aFromTop, aFromLeft, aTop, aLeft)
             console.log(lpath);
             console.log(findedPath[i])
             if (lpath.length > 0) {
-                lpath=findedPath[i].concat(lpath);
+                lpath = findedPath[i].concat(lpath);
                 console.log(lpath);
-                return lpath;
+                if (corrPath.length == 0) {
+                    corrPath = lpath
+                }
+                if (lpath.length < corrPath.length) {
+                    corrPath = lpath;
+                }
             }
         }
     }
     console.log(findedPath);
-    return [];
+    return corrPath;
 };
 
 // Поиск траектории движения в заданую точку
@@ -602,33 +608,25 @@ Sokoban.prototype.selectFromMouse = function (top, left) {
     if (left < 0) return;
     if (top >= this.Width) return;
     if (left >= this.Height) return;
-    if (this.field[top][left] == Sokoban.ITEM_EMPTY) {
+    if ((this.field[top][left] == Sokoban.ITEM_BOX) ||
+        (this.field[top][left] == Sokoban.ITEM_SOLVED)) {
+        this.mouse.top = top;
+        this.mouse.left = left;
+        return;
+    }
+    if (this.field[this.mouse.top][this.mouse.left] == Sokoban.ITEM_BOX) {
+        var path = this.findPathWithPush(this.mouse.top, this.mouse.left, top, left);
+        console.dir(path);
+        if (path != []) {
+            this.automoves = path;
+        }
+    } else {
         var path = this.findPath(top, left);
         console.dir(path);
         if (path != []) {
             this.automoves = path;
         }
-        return;
-    }
-    if (this.field[top][left] == Sokoban.ITEM_TARGET) {
-        if (this.field[this.mouse.top][this.mouse.left] == Sokoban.ITEM_BOX) {
-            var path = this.findPathWithPush(this.mouse.top, this.mouse.left, top, left);
-            console.dir(path);
-            if (path != []) {
-                this.automoves = path;
-            }
-        } else {
-            var path = this.findPath(top, left);
-            console.dir(path);
-            if (path != []) {
-                this.automoves = path;
-            }
 
-        }
-    } else if ((this.field[top][left] == Sokoban.ITEM_BOX) ||
-        (this.field[top][left] == Sokoban.ITEM_SOLVED)) {
-        this.mouse.top = top;
-        this.mouse.left = left;
     }
 };
 
