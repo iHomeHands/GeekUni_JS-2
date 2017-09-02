@@ -80,10 +80,10 @@ Sokoban.descDirection = {
 };
 
 Sokoban.assignSimple = function (action, a1, b1, a2, b2) {
-    if (action === undefined) {
+    if (undefined === action) {
         action = [];
     }
-    if (action[a1] === undefined) {
+    if (undefined === action[a1]) {
         action[a1] = [];
     }
     action[a1][b1] = {
@@ -93,11 +93,11 @@ Sokoban.assignSimple = function (action, a1, b1, a2, b2) {
 };
 
 Sokoban.assignWithPush = function (action, reverseAction, a1, b1, c1, a2, b2, c2) {
-    if (action === undefined)
+    if (undefined === action)
         action = [];
-    if (action[a1] === undefined)
+    if (undefined === action[a1])
         action[a1] = [];
-    if (action[a1][b1] === undefined)
+    if (undefined === action[a1][b1])
         action[a1][b1] = [];
 
     action[a1][b1][c1] = {
@@ -105,13 +105,13 @@ Sokoban.assignWithPush = function (action, reverseAction, a1, b1, c1, a2, b2, c2
         'changeNew': b2,
         'changeBefore': c2
     };
-    if (reverseAction === undefined) {
+    if (undefined === reverseAction) {
         reverseAction = [];
     }
-    if (reverseAction[a2] === undefined) {
+    if (undefined === reverseAction[a2]) {
         reverseAction[a2] = [];
     }
-    if (reverseAction[a2][b2] === undefined) {
+    if (undefined === reverseAction[a2][b2]) {
         reverseAction[a2][b2] = [];
     }
     reverseAction[a2][b2][c2] = {
@@ -194,7 +194,7 @@ Sokoban.stateItem = {
 
 // Генерируем контент по шаблону
 Sokoban.prototype.parseTemplate = function (tpl, data) {
-    return tpl.replace(/\{\{([^\}]+)\}\}/g, (str, key) => data[key] || '');
+    return tpl.replace(/{{([^}]+)}}/g, (str, key) => data[key] || '');
 };
 
 // Инициализация
@@ -206,10 +206,14 @@ Sokoban.prototype.init = function () {
 // Определяет тип обекта по условному обозначению
 Sokoban.getType = function (my_char) {
     for (let key in Sokoban.stateItem) {
-        if (Sokoban.stateItem[key]['char'] === my_char) {
-            return key;
+        if (Sokoban.stateItem.hasOwnProperty(key) && (Sokoban.stateItem[key]['char'] === my_char)) {
+            return +key;
         }
     }
+};
+
+Sokoban.prototype.isInType = function (aType, aSets) {
+    return aSets.indexOf(aType) !== -1;
 };
 
 // Очищение поля
@@ -253,14 +257,11 @@ Sokoban.prototype.loadField = function () {
             } else {
                 this.field[i][j] = Sokoban.getType(' ');
             }
-            if ((this.field[i][j] == Sokoban.ITEM_MAN) ||
-                (this.field[i][j] == Sokoban.ITEM_MAN_TARGET)) {
+            if (this.isInType(this.field[i][j], [Sokoban.ITEM_MAN, Sokoban.ITEM_MAN_TARGET])) {
                 this.man.top = i;
                 this.man.left = j;
             }
-            if ((this.field[i][j] == Sokoban.ITEM_TARGET) ||
-                (this.field[i][j] == Sokoban.ITEM_MAN_TARGET) ||
-                (this.field[i][j] == Sokoban.ITEM_SOLVED)) {
+            if (this.isInType(this.field[i][j], [Sokoban.ITEM_TARGET, Sokoban.ITEM_MAN_TARGET, Sokoban.ITEM_SOLVED])) {
                 this.targets.push({'top': i, 'left': j});
             }
 
@@ -276,7 +277,7 @@ Sokoban.prototype.loadField = function () {
             sokobanItem.style.left = (j * this.options.cellSize) + 'px';
             let _this = this;
             sokobanItem.addEventListener("click", function () {
-                _this.selectFromMouse(this.dataset.top, this.dataset.left);
+                _this.selectFromMouse(+(this.dataset.top), +(this.dataset.left));
             });
             this.element.appendChild(sokobanItem);
         }
@@ -303,7 +304,7 @@ Sokoban.prototype.onTime = function () {
     }
 };
 
-// Воспроизведение ходов aTз очaLреди автоматических ходов
+// Воспроизведение ходов из очереди автоматических ходов
 Sokoban.prototype.onAutoMove = function () {
     if (this.automoves.length === 0) {
         return;
@@ -319,19 +320,14 @@ Sokoban.prototype.isWrongPos = function (top, left) {
 };
 
 Sokoban.prototype.allowSimpleStep = function (aTop, aLeft) {
-    return !((this.field[aTop][aLeft] == Sokoban.ITEM_WALL) ||
-    (this.field[aTop][aLeft] == Sokoban.ITEM_BOX) ||
-    (this.field[aTop][aLeft] == Sokoban.ITEM_SOLVED));
+    return !(this.isInType(this.field[aTop][aLeft], [Sokoban.ITEM_WALL, Sokoban.ITEM_BOX, Sokoban.ITEM_SOLVED]));
 };
 
 Sokoban.prototype.allowPushStep = function (aTop, aLeft) {
-    return !((this.field[aTop][aLeft] == Sokoban.ITEM_WALL) ||
-    (this.field[aTop][aLeft] == Sokoban.ITEM_BOX) ||
-    (this.field[aTop][aLeft] == Sokoban.ITEM_SOLVED));
+    return !(this.isInType(this.field[aTop][aLeft], [Sokoban.ITEM_WALL, Sokoban.ITEM_BOX, Sokoban.ITEM_SOLVED]));
 };
 
 Sokoban.prototype.findPathWithPushInner = function (aFromTop, aFromLeft, aTop, aLeft) {
-    console.log(aFromTop, aFromLeft, aTop, aLeft);
     let newman = {};
     let wave = [];
     let step = 0; // шаг волнового алгоритма
@@ -349,7 +345,6 @@ Sokoban.prototype.findPathWithPushInner = function (aFromTop, aFromLeft, aTop, a
             wave[i][j] = -1;
         }
     }
-    //console.log(wave);
     wave[newman.top][newman.left] = step;
     for (step = 0; step < 100; step++) {
         count = 0;
@@ -363,7 +358,7 @@ Sokoban.prototype.findPathWithPushInner = function (aFromTop, aFromLeft, aTop, a
                             continue;
                         }
                         if (wave[top][left] === -1) {
-                            if (( top == aFromTop) && (left == aFromLeft)) {
+                            if (( top === aFromTop) && (left === aFromLeft)) {
                                 wave[top][left] = step + 1;
                             }
                             if (!this.allowPushStep(top, left)) {
@@ -612,13 +607,13 @@ Sokoban.prototype.selectFromMouse = function (top, left) {
     if (left < 0) return;
     if (top >= this.Width) return;
     if (left >= this.Height) return;
-    if ((this.field[top][left] == Sokoban.ITEM_BOX) ||
-        (this.field[top][left] == Sokoban.ITEM_SOLVED)) {
+
+    if (this.isInType(this.field[top][left], [Sokoban.ITEM_BOX, Sokoban.ITEM_SOLVED])) {
         this.mouse.top = top;
         this.mouse.left = left;
         return;
     }
-    if (this.field[this.mouse.top][this.mouse.left] == Sokoban.ITEM_BOX) {
+    if (this.isInType(this.field[this.mouse.top][this.mouse.left], [Sokoban.ITEM_BOX])) {
         let path = this.findPathWithPush(this.mouse.top, this.mouse.left, top, left);
         console.dir(path);
         if (path !== []) {
@@ -652,7 +647,7 @@ Sokoban.prototype.isSolved = function () {
     for (let ArrKey in this.targets) {
         const type = this.field[this.targets[ArrKey]['top']]
             [this.targets[ArrKey]['left']];
-        if (type != Sokoban.ITEM_SOLVED) {
+        if (!this.isInType(type, [Sokoban.ITEM_SOLVED])) {
             count++;
         }
     }
@@ -721,9 +716,9 @@ Sokoban.prototype.doReturnSimple = function (direction) {
     const oldManState = this.field[this.man.top][this.man.left];
 
     const newManState = this.field[newman.top][newman.left];
-    if (Sokoban.simple[oldManState] !== undefined) {
+    if (undefined !== Sokoban.simple[oldManState]) {
         const doAction = Sokoban.simple[oldManState][newManState];
-        if (doAction !== undefined) {
+        if (undefined !== doAction ) {
             this.field[this.man.top][this.man.left] = doAction['changeOld'];
             this.field[newman.top][newman.left] = doAction['changeNew'];
             this.updateClass(this.man.top, this.man.left);
@@ -755,10 +750,10 @@ Sokoban.prototype.doReturnPush = function (direction) {
     const oldManState = this.field[newman.top][newman.left];
 
     const newBoxState = this.field[newbox.top][newbox.left];
-    if (Sokoban.reverseAction[oldManState] !== undefined) {
+    if (undefined !== Sokoban.reverseAction[oldManState]) {
         const doAction = Sokoban.reverseAction[oldManState][newManState];
-        if (doAction !== undefined) {
-            if (doAction[newBoxState] !== undefined) {
+        if (undefined !== doAction ) {
+            if (undefined !== doAction[newBoxState]) {
                 this.field[this.man.top][this.man.left] =
                     doAction[newBoxState]['changeNew'];
                 this.field[newman.top][newman.left] =
@@ -784,7 +779,7 @@ Sokoban.prototype.allowedStep = function (direction, man_left, man_top) {
     man_left += Sokoban.descDirection[direction].dy;
     man_top += Sokoban.descDirection[direction].dx;
     const newManState = this.field[man_top][man_left];
-    return ((newManState == Sokoban.ITEM_EMPTY) || (newManState == Sokoban.ITEM_TARGET));
+    return (this.isInType(newManState, [Sokoban.ITEM_EMPTY, Sokoban.ITEM_TARGET]));
 };
 
 // обрабатывает действия движения
@@ -798,7 +793,7 @@ Sokoban.prototype.doStep = function (direction) {
 
     const newManState = this.field[newman.top][newman.left];
 
-    if ((newManState == Sokoban.ITEM_BOX) || (newManState == Sokoban.ITEM_SOLVED)) {
+    if (this.isInType(newManState, [Sokoban.ITEM_BOX, Sokoban.ITEM_SOLVED])) {
         const newbox = {};
         Object.assign(newbox, this.man);
         newbox.left += Sokoban.descDirection[direction].dy * 2;
@@ -806,8 +801,8 @@ Sokoban.prototype.doStep = function (direction) {
         const newBoxState = this.field[newbox.top][newbox.left];
         if (Sokoban.action[oldManState] !== undefined) {
             let doAction = Sokoban.action[oldManState][newManState];
-            if (doAction !== undefined) {
-                if (doAction[newBoxState] !== undefined) {
+            if (undefined !== doAction) {
+                if (undefined !== doAction[newBoxState]) {
                     this.field[this.man.top][this.man.left] =
                         doAction[newBoxState]['changeOld'];
                     this.field[newman.top][newman.left] =
@@ -827,9 +822,9 @@ Sokoban.prototype.doStep = function (direction) {
             }
         }
     } else {
-        if (Sokoban.simple[oldManState] !== undefined) {
+        if (undefined !== Sokoban.simple[oldManState] ) {
             let doAction = Sokoban.simple[oldManState][newManState];
-            if (doAction !== undefined) {
+            if (undefined !== doAction ) {
                 this.field[this.man.top][this.man.left] = doAction['changeOld'];
                 this.field[newman.top][newman.left] = doAction['changeNew'];
                 this.updateClass(this.man.top, this.man.left);
