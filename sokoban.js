@@ -302,7 +302,7 @@ Sokoban.prototype.onTime = function () {
     }
 };
 
-// Воспроизведение ходов из очереди автоматических ходов
+// Воспроизведение ходов aTз очaLреди автоматических ходов
 Sokoban.prototype.onAutoMove = function () {
     if (this.automoves.length == 0) {
         return;
@@ -316,6 +316,26 @@ Sokoban.prototype.onAutoMove = function () {
 Sokoban.prototype.isWrongPos = function (top, left) {
     return ((top < 0) || (left < 0) || (top >= this.height) || (left >= this.width));
 };
+
+Sokoban.prototype.allowSimpleStep = function (aTop, aLeft) {
+    if (
+        (this.field[aTop][aLeft] == Sokoban.ITEM_WALL) ||
+        (this.field[aTop][aLeft] == Sokoban.ITEM_BOX) ||
+        (this.field[aTop][aLeft] == Sokoban.ITEM_SOLVED)) {
+        return false;
+    }
+    return true;
+}
+
+Sokoban.prototype.allowPushStep = function (aTop, aLeft) {
+    if (
+        (this.field[aTop][aLeft] == Sokoban.ITEM_WALL) ||
+        (this.field[aTop][aLeft] == Sokoban.ITEM_BOX) ||
+        (this.field[aTop][aLeft] == Sokoban.ITEM_SOLVED)) {
+        return false;
+    }
+    return true;
+}
 
 Sokoban.prototype.findPathWithPushInner = function (aFromTop, aFromLeft, aTop, aLeft) {
     console.log(aFromTop, aFromLeft, aTop, aLeft);
@@ -354,11 +374,7 @@ Sokoban.prototype.findPathWithPushInner = function (aFromTop, aFromLeft, aTop, a
                             if (( top == aFromTop) && (left == aFromLeft)) {
                                 wave[top][left] = step + 1;
                             }
-                            if (
-                                (this.field[top][left] == Sokoban.ITEM_WALL) ||
-                                (this.field[top][left] == Sokoban.ITEM_BOX) ||
-                                (this.field[top][left] == Sokoban.ITEM_SOLVED)
-                            ) {
+                            if (!this.allowPushStep(top, left)) {
                                 continue;
                             }
                             wave[top][left] = step + 1;
@@ -414,20 +430,22 @@ Sokoban.prototype.findPathWithPush = function (aFromTop, aFromLeft, aTop, aLeft)
         newman.top = parseInt(aFromTop) + Sokoban.descDirection[i].dy;
         newman.left = parseInt(aFromLeft) + Sokoban.descDirection[i].dx;
         findedPath[i] = this.findPath(newman.top, newman.left);
-        if (findedPath[i].length > 0) {
-            var lpath = this.findPathWithPushInner(aFromTop, aFromLeft, aTop, aLeft);
-            console.log(lpath);
-            console.log(findedPath[i])
-            if (lpath.length > 0) {
-                lpath = findedPath[i].concat(lpath);
-                console.log(lpath);
-                if (corrPath.length == 0) {
-                    corrPath = lpath
-                }
-                if (lpath.length < corrPath.length) {
-                    corrPath = lpath;
-                }
-            }
+        if (findedPath[i].length == 0) {
+            continue;
+        }
+        var lpath = this.findPathWithPushInner(aFromTop, aFromLeft, aTop, aLeft);
+        console.log(lpath);
+        console.log(findedPath[i])
+        if (lpath.length == 0) {
+            continue;
+        }
+        lpath = findedPath[i].concat(lpath);
+        console.log(lpath);
+        if (corrPath.length == 0) {
+            corrPath = lpath
+        }
+        if (lpath.length < corrPath.length) {
+            corrPath = lpath;
         }
     }
     console.log(findedPath);
@@ -467,11 +485,7 @@ Sokoban.prototype.findPath = function (aTop, aLeft) {
                             continue;
                         }
                         if (wave[top][left] == -1) {
-                            if (
-                                (this.field[top][left] == Sokoban.ITEM_WALL) ||
-                                (this.field[top][left] == Sokoban.ITEM_BOX) ||
-                                (this.field[top][left] == Sokoban.ITEM_SOLVED)
-                            ) {
+                            if (!this.allowSimpleStep(top, left)) {
                                 continue;
                             }
                             wave[top][left] = step + 1;
